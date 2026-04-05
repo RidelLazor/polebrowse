@@ -1,0 +1,2862 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<title>PoleBrowse</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg:#0a0a0f; --l1:#111118; --l2:#18181f; --l3:#21212b;
+  --border:#2c2c3a; --border2:#3a3a4d;
+  --text:#dddde8; --muted:#6a6a80;
+  --accent:#5b8af5; --accent2:#7fa3ff;
+  --red:#e05c5c; --green:#4ade80;
+  --ff:'Outfit',sans-serif; --mono:'JetBrains Mono',monospace;
+}
+
+/* ── LIGHT MODE ── */
+body.light {
+  --bg:#f4f4f8; --l1:#ffffff; --l2:#ededf3; --l3:#e2e2ea;
+  --border:#d0d0dc; --border2:#b8b8cc;
+  --text:#1a1a2e; --muted:#7070a0;
+  --accent:#4a7af5; --accent2:#6b96ff;
+  --red:#d94040; --green:#26a65b;
+}
+body.light #titlebar {
+  background:#ffffff;
+  border-bottom:1px solid var(--border);
+}
+body.light #navbar {
+  background:#ffffff;
+  border-bottom:1px solid var(--border);
+}
+body.light #bookmarks {
+  background:#f8f8fc;
+  border-bottom:1px solid var(--border);
+}
+body.light .tab {
+  color:var(--muted);
+}
+body.light .tab.active {
+  background:#f4f4f8;
+  border-color:rgba(74,122,245,0.35);
+  border-bottom-color:#f4f4f8;
+  box-shadow:inset 0 2px 0 var(--accent);
+  color:var(--text);
+}
+body.light .tab:hover {
+  background:rgba(0,0,0,0.05);
+  color:var(--text);
+}
+body.light #urlbar-wrap {
+  background:#f0f0f8;
+  border-color:rgba(74,122,245,0.25);
+}
+body.light #urlbar-wrap:focus-within {
+  background:#ffffff;
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(74,122,245,.12);
+}
+body.light #homepage {
+  background:#f4f4f8;
+  background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:40px 40px;
+}
+body.light #homepage::before {
+  background:radial-gradient(ellipse at center,transparent 30%,#f4f4f8 80%);
+}
+body.light #dotmenu {
+  background:#ffffff;
+  border-color:var(--border);
+  box-shadow:0 8px 40px rgba(0,0,0,.15);
+}
+body.light .dm-item:hover {
+  background:var(--accent);
+  color:#fff;
+}
+body.light #ctx-menu {
+  background:#ffffff;
+  border-color:var(--border);
+  box-shadow:0 8px 32px rgba(0,0,0,.15);
+}
+body.light .ctx-item:hover {
+  background:var(--accent);
+  color:#fff;
+}
+body.light #suggestions {
+  background:#ffffff;
+  border-color:var(--border);
+  box-shadow:0 8px 32px rgba(0,0,0,.12);
+}
+body.light .sg-item:hover, body.light .sg-item.active {
+  background:var(--l2);
+}
+body.light .ridell-page {
+  background:var(--bg);
+}
+body.light .rp-header {
+  background:var(--l1);
+  border-bottom-color:var(--border);
+}
+body.light .panel-header {
+  background:var(--l1);
+  border-bottom-color:var(--border);
+}
+body.light .side-panel {
+  background:var(--bg);
+}
+body.light #extensions-page {
+  background:var(--bg);
+}
+body.light .ext-card {
+  background:var(--l1);
+  border-color:var(--border);
+}
+body.light .ext-card:hover {
+  border-color:var(--accent);
+}
+body.light .settings-section {
+  background:var(--l1);
+  border-color:var(--border);
+}
+body.light .settings-row:hover {
+  background:var(--l2);
+}
+body.light .dl-item {
+  background:var(--l1);
+  border-color:var(--border);
+}
+body.light #win-controls button {
+  color:var(--muted);
+}
+body.light #btn-close:hover {
+  background:var(--red);
+  color:#fff;
+}
+body.light .nbtn:hover:not(:disabled) {
+  background:var(--l3);
+  color:var(--text);
+}
+body.light .hp-logo .p2 {
+  color:var(--accent);
+}
+body.light #hp-search {
+  background:var(--l1);
+  border-color:var(--border2);
+  color:var(--text);
+}
+body.light .sc {
+  background:var(--l1);
+  border-color:var(--border);
+}
+body.light .sc:hover {
+  background:var(--l2);
+  border-color:var(--accent);
+  box-shadow:0 6px 20px rgba(74,122,245,.12);
+}
+body.light .sc-icon {
+  background:var(--l2);
+}
+body.light #hp-time {
+  color:var(--muted);
+}
+body.light ::-webkit-scrollbar-thumb {
+  background:rgba(0,0,0,0.15);
+}
+body.light ::-webkit-scrollbar-thumb:hover {
+  background:rgba(0,0,0,0.25);
+}
+html,body { width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--ff);display:flex;flex-direction:column; }
+
+/* TITLEBAR */
+#titlebar { height:38px;min-height:38px;background:#0a0a0f;display:flex;flex-direction:column;border-bottom:none;flex-shrink:0;user-select:none;-webkit-app-region:drag;border-bottom:1px solid #2c2c3a; }
+#titlebar-top { height:38px;min-height:38px;display:flex;align-items:center;padding:0 0 0 6px;gap:0;flex-shrink:0;-webkit-app-region:drag;overflow:hidden; }
+#titlebar-top > * { -webkit-app-region:no-drag; }
+#titlebar-tabs { display:none; }
+#logo { width:22px;height:22px;border-radius:5px;flex-shrink:0;object-fit:contain;padding:0;margin:0 6px 0 2px;-webkit-app-region:no-drag; }
+#tabs-wrap { flex:1;display:flex;align-items:flex-end;gap:1px;overflow:hidden;min-width:0;height:100%; }
+#drag-region { flex:1;height:100%;min-width:20px;-webkit-app-region:drag !important; }
+
+/* ── CHROME-STYLE TABS ── */
+.tab { display:flex;align-items:center;gap:6px;height:30px;padding:0 11px 0 10px;border-radius:7px 7px 0 0;border:1px solid transparent;border-bottom:none;cursor:pointer;font-size:11.5px;font-weight:500;font-family:var(--ff);letter-spacing:.01em;color:var(--muted);white-space:nowrap;max-width:240px;min-width:80px;flex:1 1 0;transition:background .15s,color .15s,border-color .15s,box-shadow .15s;flex-shrink:1;-webkit-app-region:no-drag;background:transparent;align-self:flex-end; }
+.tab:hover { background:rgba(255,255,255,0.05);color:var(--muted2); }
+.tab.active { background:var(--l1);color:var(--text);border-color:rgba(91,138,245,0.35);border-bottom-color:var(--l1);box-shadow:inset 0 2px 0 var(--accent); }
+.tab-fav { width:16px;height:16px;border-radius:3px;flex-shrink:0;object-fit:contain; }
+.tab-title { flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.tab-x { width:16px;height:16px;border-radius:4px;border:none;background:transparent;color:var(--muted);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;opacity:0;transition:background .1s,opacity .1s;margin-left:auto; }
+.tab:hover .tab-x,.tab.active .tab-x { opacity:1; }
+.tab.dragging { opacity:0.5;cursor:grabbing; }
+#btn-newtab { width:24px;height:24px;border-radius:5px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .12s;flex-shrink:0;align-self:center;-webkit-app-region:no-drag;margin-left:3px; }
+#btn-newtab:hover { background:var(--l3);color:var(--text); }
+#detach-ghost { position:fixed;pointer-events:none;z-index:9999;background:var(--l2);border:1px solid var(--accent);border-radius:6px;padding:4px 10px;font-size:12px;font-family:var(--ff);color:var(--text);display:none;align-items:center;gap:6px;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.4); }
+#detach-ghost.show { display:flex; }
+#detach-zone { position:fixed;top:0;left:0;right:0;height:50px;z-index:9998;pointer-events:none; }
+#win-controls { display:flex;align-items:center;gap:2px;flex-shrink:0;-webkit-app-region:no-drag; }
+#win-controls button { width:28px;height:28px;border-radius:5px;border:none;background:transparent;color:var(--muted);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s; }
+#btn-min:hover { background:rgba(255,255,255,0.08);color:var(--text); }
+#btn-max:hover { background:rgba(255,255,255,0.08);color:var(--text); }
+#btn-close:hover { background:rgba(240,96,96,0.2);color:#f87171;box-shadow:0 0 0 1px rgba(240,96,96,0.3); }
+
+/* NAVBAR */
+#navbar { height:48px;min-height:48px;padding:0 12px;gap:8px;background:var(--l1);display:flex;align-items:center;border-bottom:1px solid var(--border);border-top:none;flex-shrink:0; }
+.nbtn { width:28px;height:28px;border-radius:7px;border:none;background:transparent;color:var(--muted);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0; }
+.nbtn:hover:not(:disabled) { background:var(--l3);color:var(--text); }
+.nbtn:disabled { opacity:.25;cursor:default; }
+.nbtn.active-panel { color:var(--accent);background:var(--l2); }
+#urlbar-wrap { flex:1;display:flex;align-items:center;background:var(--l2);border:1px solid rgba(91,138,245,0.25);border-radius:10px;padding:0 6px 0 14px;transition:border-color .15s,box-shadow .15s;height:34px;position:relative; }
+#urlbar-wrap:focus-within { border-color:var(--accent);box-shadow:0 0 0 3px rgba(91,138,245,.12); }
+#urlbar { flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:var(--mono);font-size:13px;min-width:0; }
+#urlbar::placeholder { color:var(--muted);font-family:var(--ff);font-size:12px; }
+#btn-go { width:30px;height:30px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .12s; }
+#btn-go:hover { background:var(--accent2); }
+
+/* ── SUGGESTIONS DROPDOWN ── */
+#suggestions {
+  position:absolute;
+  top:calc(100% + 4px);
+  left:0; right:0;
+  background:var(--l1);
+  border:1px solid var(--border);
+  border-radius:12px;
+  box-shadow:0 8px 32px rgba(0,0,0,.45);
+  overflow:hidden;
+  z-index:9999;
+  display:none;
+  max-height:380px;
+  overflow-y:auto;
+}
+#suggestions.open { display:block; }
+.sg-section { padding:4px 0; }
+.sg-section + .sg-section { border-top:1px solid var(--border); }
+.sg-label { font-size:10px;color:var(--muted);padding:6px 14px 2px;text-transform:uppercase;letter-spacing:.06em; }
+.sg-item {
+  display:flex;align-items:center;gap:10px;
+  padding:7px 14px;
+  cursor:pointer;
+  transition:background .1s;
+  border:none;background:transparent;width:100%;text-align:left;
+}
+.sg-item:hover, .sg-item.active { background:var(--l2); }
+.sg-icon { width:16px;height:16px;border-radius:4px;flex-shrink:0;object-fit:contain; }
+.sg-icon-char { width:16px;height:16px;border-radius:4px;flex-shrink:0;font-size:12px;display:flex;align-items:center;justify-content:center;background:var(--l2); }
+.sg-text { flex:1;min-width:0; }
+.sg-title { font-size:12.5px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.sg-url { font-size:10.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--mono); }
+.sg-badge { font-size:10px;color:var(--muted);flex-shrink:0;padding:2px 6px;border-radius:4px;background:var(--l2); }
+#dl-badge { position:relative; }
+#dl-badge-count { position:absolute;top:-2px;right:-2px;width:14px;height:14px;border-radius:50%;background:var(--accent);color:#fff;font-size:9px;font-weight:600;display:none;align-items:center;justify-content:center; }
+#dl-badge-count.show { display:flex; }
+
+/* PROGRESS */
+#progress { height:2px;min-height:2px;flex-shrink:0;background:transparent;overflow:hidden; }
+#progress-fill { height:100%;width:0%;background:linear-gradient(90deg,var(--accent3),var(--accent),var(--accent2));transition:width .25s ease;border-radius:2px;box-shadow:0 0 8px rgba(245,166,35,0.5); }
+
+/* BOOKMARKS */
+#bookmarks { height:36px;min-height:36px;background:var(--l1);display:flex;align-items:center;padding:0 10px;gap:2px;border-bottom:1px solid var(--border);flex-shrink:0;overflow:hidden; }
+.bm { display:flex;align-items:center;gap:4px;height:22px;padding:0 9px;border-radius:5px;border:none;background:transparent;color:var(--muted);font-size:11px;font-family:var(--ff);cursor:pointer;white-space:nowrap;transition:all .12s; }
+.bm:hover { background:var(--l3);color:var(--text); }
+.bm-fav { width:12px;height:12px;border-radius:2px;flex-shrink:0;object-fit:contain; }
+.sc-icon img { width:24px;height:24px;object-fit:contain; }
+.hist-fav { width:14px;height:14px;border-radius:2px;flex-shrink:0;object-fit:contain; }
+
+/* HOMEPAGE */
+#homepage { flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px;background:var(--bg);background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px;position:relative; }
+#homepage::before { content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 30%,var(--bg) 80%);pointer-events:none; }
+#hp-inner { position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:28px; }
+#hp-logo { font-size:56px;font-weight:600;letter-spacing:-2px;line-height:1;display:flex;align-items:center; }
+#hp-logo .p1 { color:var(--text); } #hp-logo .p2 { color:var(--accent); }
+#hp-search-wrap { position:relative;width:580px; }
+#hp-search { width:100%;height:52px;background:var(--l1);border:1px solid var(--border2);border-radius:12px;color:var(--text);font-family:var(--ff);font-size:14px;padding:0 52px 0 18px;outline:none;transition:border-color .15s,box-shadow .15s; }
+#hp-search:focus { border-color:var(--accent);box-shadow:0 0 0 3px rgba(91,138,245,.12); }
+#hp-search::placeholder { color:var(--muted); }
+#hp-go-btn { position:absolute;right:8px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .12s; }
+#hp-go-btn:hover { background:var(--accent2); }
+#hp-shortcuts { display:flex;gap:10px; }
+.sc { display:flex;flex-direction:column;align-items:center;gap:8px;width:96px;padding:18px 10px;border-radius:14px;background:var(--l1);border:1px solid var(--border);cursor:pointer;transition:all .15s; }
+.sc:hover { background:var(--l2);border-color:var(--accent);transform:translateY(-2px);box-shadow:0 6px 20px rgba(91,138,245,.12); }
+.sc-icon { width:44px;height:44px;border-radius:12px;background:var(--l2);display:flex;align-items:center;justify-content:center;font-size:22px; }
+.sc-label { font-size:10.5px;font-weight:500;color:var(--muted);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;letter-spacing:.02em; }
+#hp-time { font-family:var(--mono);font-size:14px;color:var(--muted);letter-spacing:1px; }
+
+/* SIDE PANELS */
+.side-panel { display:none;flex-direction:column;flex:1;min-height:0;background:var(--bg); }
+.side-panel.open { display:flex; }
+.panel-header { display:flex;align-items:center;padding:18px 24px 12px;gap:12px;border-bottom:1px solid var(--border);flex-shrink:0; }
+.panel-header h2 { font-size:15px;font-weight:700;flex:1;letter-spacing:-.2px; }
+.panel-close { width:26px;height:26px;border-radius:6px;border:none;background:var(--l2);color:var(--muted);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center; }
+.panel-close:hover { color:var(--text); }
+.panel-body { flex:1;overflow-y:auto;padding:10px 24px;display:flex;flex-direction:column;gap:2px; }
+.panel-body::-webkit-scrollbar { width:4px; }
+.panel-body::-webkit-scrollbar-thumb { background:var(--border2);border-radius:4px; }
+.panel-empty { text-align:center;color:var(--muted);font-size:13px;margin-top:40px; }
+
+/* HISTORY */
+.hist-item { display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:7px;cursor:pointer;transition:background .1s; }
+.hist-item:hover { background:var(--l2); }
+.hist-url { flex:1;font-size:11.5px;font-family:var(--mono);color:var(--accent2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.hist-title { font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px; }
+.hist-time { font-size:10px;color:var(--muted);font-family:var(--mono);flex-shrink:0; }
+
+/* DOWNLOADS */
+.dl-item { display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-radius:9px;background:var(--l1);border:1px solid var(--border);margin-bottom:6px; }
+.dl-item-top { display:flex;align-items:center;gap:10px; }
+.dl-icon { width:32px;height:32px;border-radius:7px;background:var(--l2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0; }
+.dl-info { flex:1;min-width:0; }
+.dl-name { font-size:12px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.dl-size { font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:2px; }
+.dl-actions { display:flex;gap:4px;flex-shrink:0; }
+.dl-btn { height:24px;padding:0 8px;border-radius:5px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:10px;font-family:var(--ff);cursor:pointer;transition:all .12s;display:flex;align-items:center;gap:3px; }
+.dl-btn:hover { background:var(--l3);color:var(--text); }
+.dl-btn.open-btn:hover { background:var(--accent);border-color:var(--accent);color:#fff; }
+.dl-bar-wrap { height:3px;background:var(--l3);border-radius:3px;overflow:hidden; }
+.dl-bar { height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width .2s ease; }
+.dl-status { font-size:10px;font-family:var(--mono); }
+.dl-status.done { color:var(--green); } .dl-status.fail { color:var(--red); } .dl-status.prog { color:var(--accent2); }
+#dl-clear { padding:5px 12px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--red);font-size:11px;font-family:var(--ff);cursor:pointer;transition:all .12s; }
+#dl-clear:hover { background:var(--red);color:#fff; }
+
+/* EXTENSIONS PAGE */
+#extensions-page { display:none;flex-direction:column;flex:1;min-height:0;background:var(--bg); }
+#extensions-page.open { display:flex; }
+#ext-header { display:flex;align-items:center;padding:20px 28px 0;gap:16px;flex-shrink:0; }
+#ext-header h2 { font-size:20px;font-weight:600; }
+#ext-search-wrap { flex:1;max-width:400px;position:relative; }
+#ext-search { width:100%;height:34px;background:var(--l2);border:1px solid var(--border);border-radius:9px;color:var(--text);font-family:var(--ff);font-size:13px;padding:0 12px;outline:none;transition:border-color .15s; }
+#ext-search:focus { border-color:var(--accent); }
+#ext-search::placeholder { color:var(--muted); }
+#ext-tabs { display:flex;gap:4px;padding:16px 28px 0;flex-shrink:0;border-bottom:1px solid var(--border); }
+#btn-load-unpacked,#btn-open-cws { height:32px;padding:0 14px;border-radius:8px;border:1px solid var(--border2);background:var(--l2);color:var(--text);font-size:12px;font-family:var(--ff);cursor:pointer;white-space:nowrap;transition:background .12s; }
+#btn-load-unpacked:hover,#btn-open-cws:hover { background:var(--l3); }
+#btn-open-cws { border-color:rgba(91,138,245,.4);color:var(--accent); }
+.ext-tab { padding:8px 16px;border-radius:8px 8px 0 0;border:none;background:transparent;color:var(--muted);font-size:13px;font-family:var(--ff);cursor:pointer;transition:all .12s;border-bottom:2px solid transparent; }
+.ext-tab.active { color:var(--accent);border-bottom-color:var(--accent); }
+.ext-tab:hover:not(.active) { color:var(--text); }
+#ext-body { flex:1;overflow-y:auto;padding:20px 28px; }
+#ext-body::-webkit-scrollbar { width:4px; }
+#ext-body::-webkit-scrollbar-thumb { background:var(--border2);border-radius:4px; }
+#ext-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px; }
+.ext-card { background:var(--l1);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;transition:border-color .15s; }
+.ext-card:hover { border-color:var(--border2); }
+.ext-card-top { display:flex;gap:12px;align-items:flex-start; }
+.ext-img { width:48px;height:48px;border-radius:10px;background:var(--l2);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;overflow:hidden; }
+.ext-img img { width:100%;height:100%;object-fit:cover;border-radius:10px; }
+.ext-meta { flex:1;min-width:0; }
+.ext-name { font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.ext-author { font-size:11px;color:var(--muted);margin-top:2px; }
+.ext-stats { display:flex;gap:8px;margin-top:4px; }
+.ext-stat { font-size:10px;color:var(--muted);display:flex;align-items:center;gap:3px; }
+.ext-desc { font-size:11.5px;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden; }
+.ext-actions { display:flex;gap:8px;align-items:center; }
+.ext-install-btn { flex:1;height:30px;border-radius:7px;border:none;background:var(--accent);color:#fff;font-size:12px;font-family:var(--ff);font-weight:500;cursor:pointer;transition:background .12s;display:flex;align-items:center;justify-content:center;gap:6px; }
+.ext-install-btn:hover { background:var(--accent2); }
+.ext-install-btn.installed { background:var(--l3);color:var(--muted);border:1px solid var(--border2); }
+.ext-install-btn.installed:hover { background:var(--red);color:#fff;border-color:var(--red); }
+.ext-install-btn.installing { background:var(--l3);color:var(--muted);cursor:default; }
+.ext-install-btn:disabled { opacity:.5;cursor:default; }
+.ext-toast { position:fixed;bottom:24px;right:24px;background:var(--l2);border:1px solid var(--border2);border-radius:10px;padding:12px 18px;font-size:13px;color:var(--text);z-index:999;display:none;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.4); }
+.ext-toast.show { display:flex; }
+.ext-toast.success { border-color:var(--green);color:var(--green); }
+.ext-toast.error { border-color:var(--red);color:var(--red); }
+/* 3-DOT MENU */
+#dotmenu { position:fixed;top:88px;right:10px;z-index:99998;background:var(--l2);border:1px solid var(--border2);border-radius:12px;padding:6px;width:290px;box-shadow:0 8px 40px rgba(0,0,0,.6);display:none;flex-direction:column;gap:1px;font-size:13px;font-family:var(--ff); }
+#dotmenu.show { display:flex; }
+.dm-section { display:flex;flex-direction:column;gap:1px; }
+.dm-sep { height:1px;background:var(--border);margin:4px 6px; }
+.dm-item { display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;cursor:pointer;color:var(--text);transition:all .12s;white-space:nowrap; }
+.dm-item:hover { background:var(--accent);color:#fff; }
+.dm-item:hover .dm-shortcut { color:rgba(255,255,255,.55); }
+.dm-item:hover .dm-zoom-btn { background:rgba(255,255,255,.15);color:#fff; }
+.dm-icon { font-size:15px;width:20px;text-align:center;flex-shrink:0; }
+.dm-label { flex:1; }
+.dm-shortcut { font-size:11px;color:var(--muted);font-family:var(--mono);flex-shrink:0; }
+.dm-arrow { color:var(--muted);font-size:16px;flex-shrink:0; }
+.dm-exit { color:var(--red); }
+.dm-exit:hover { background:var(--red);color:#fff; }
+/* Zoom row */
+#dm-zoom { cursor:default; }
+#dm-zoom:hover { background:transparent;color:var(--text); }
+.dm-zoom-controls { display:flex;align-items:center;gap:6px;margin-left:auto; }
+.dm-zoom-btn { width:26px;height:26px;border-radius:6px;border:1px solid var(--border2);background:var(--l3);color:var(--text);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .1s;font-family:var(--ff); }
+.dm-zoom-btn:hover { background:var(--accent);border-color:var(--accent);color:#fff; }
+.dm-zoom-full { font-size:11px; }
+#dm-zoom-val { font-size:12px;font-family:var(--mono);color:var(--text);min-width:36px;text-align:center; }
+#btn-dotmenu { font-size:18px;font-weight:700;letter-spacing:0; }
+
+/* RIDELL INTERNAL PAGES */
+.ridell-page { display:none;flex-direction:column;flex:1;min-height:0;background:var(--bg);position:absolute;inset:0;top:122px;z-index:50;overflow:hidden; }
+.ridell-page.open { display:flex; }
+.rp-header { display:flex;align-items:center;gap:14px;padding:22px 32px 14px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--l1); }
+.rp-title { font-size:19px;font-weight:700;color:var(--text);letter-spacing:-.3px; }
+.rp-url { font-size:11px;font-family:var(--mono);color:var(--accent);background:var(--l2);border:1px solid var(--border);border-radius:6px;padding:3px 10px; }
+.rp-action-btn { margin-left:auto;padding:5px 14px;border-radius:7px;border:1px solid var(--border2);background:var(--l2);color:var(--muted);font-size:12px;font-family:var(--ff);cursor:pointer;transition:all .12s; }
+.rp-action-btn:hover { background:var(--red);border-color:var(--red);color:#fff; }
+.rp-body { flex:1;overflow-y:auto;padding:20px 32px; }
+.rp-body::-webkit-scrollbar { width:5px; }
+.rp-body::-webkit-scrollbar-track { background:transparent; }
+.rp-body::-webkit-scrollbar-thumb { background:var(--border2);border-radius:3px; }
+/* SETTINGS */
+.settings-wrap { max-width:680px;display:flex;flex-direction:column;gap:24px;padding-bottom:40px; }
+.settings-section { background:var(--l1);border:1px solid var(--border);border-radius:12px;overflow:hidden; }
+.settings-section-title { font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--accent);padding:14px 20px 10px;border-bottom:1px solid var(--border); }
+.settings-row { display:flex;align-items:center;justify-content:space-between;padding:14px 20px;gap:20px;border-bottom:1px solid var(--border);transition:background .1s; }
+.settings-row:last-child { border-bottom:none; }
+.settings-row:hover { background:var(--l2); }
+.settings-row-info { display:flex;flex-direction:column;gap:3px;min-width:0; }
+.settings-row-label { font-size:13px;color:var(--text); }
+.settings-row-desc { font-size:11px;color:var(--muted); }
+.settings-version { font-size:12px;font-family:var(--mono);color:var(--accent2);background:var(--l2);border:1px solid var(--border);border-radius:6px;padding:4px 10px; }
+.st-switch { position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0; }
+.st-switch input { opacity:0;width:0;height:0; }
+.st-slider { position:absolute;cursor:pointer;inset:0;background:var(--l3);border-radius:22px;transition:.2s;border:1px solid var(--border2); }
+.st-slider:before { content:'';position:absolute;height:16px;width:16px;left:2px;bottom:2px;background:var(--muted);border-radius:50%;transition:.2s; }
+.st-switch input:checked + .st-slider { background:var(--accent);border-color:var(--accent); }
+.st-switch input:checked + .st-slider:before { transform:translateX(18px);background:#fff; }
+.st-select { background:var(--l2);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-family:var(--ff);font-size:12px;padding:6px 10px;outline:none;cursor:pointer;flex-shrink:0; }
+.st-select:focus { border-color:var(--accent); }
+.settings-toggle-group { display:flex;gap:4px;flex-shrink:0; }
+.stg-btn { padding:5px 14px;border-radius:7px;border:1px solid var(--border2);background:var(--l2);color:var(--muted);font-size:12px;font-family:var(--ff);cursor:pointer;transition:all .12s; }
+.stg-btn.active { background:var(--accent);border-color:var(--accent);color:#fff; }
+.st-danger-btn { padding:5px 14px;border-radius:7px;border:1px solid var(--red);background:transparent;color:var(--red);font-size:12px;font-family:var(--ff);cursor:pointer;transition:all .12s;flex-shrink:0; }
+.st-danger-btn:hover { background:var(--red);color:#fff; }
+
+#ctx-menu { position:fixed;z-index:99999;background:var(--l2);border:1px solid var(--border2);border-radius:10px;padding:5px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.5);display:none;flex-direction:column;gap:1px;font-size:13px;font-family:var(--ff); }
+#ctx-menu.show { display:flex; }
+.ctx-item { display:flex;align-items:center;justify-content:space-between;padding:7px 12px;border-radius:6px;cursor:pointer;color:var(--text);gap:16px;white-space:nowrap; }
+.ctx-item:hover { background:var(--accent);color:#fff; }
+.ctx-item.disabled { color:var(--muted);cursor:default; }
+.ctx-item.disabled:hover { background:transparent;color:var(--muted); }
+.ctx-label { display:flex;align-items:center;gap:8px; }
+.ctx-shortcut { font-size:11px;color:var(--muted);font-family:var(--mono); }
+.ctx-item:hover .ctx-shortcut { color:rgba(255,255,255,.6); }
+.ctx-sep { height:1px;background:var(--border);margin:3px 6px;flex-shrink:0; }
+
+</style>
+</head>
+<body>
+
+<!-- DETACH GHOST -->
+<div id="detach-ghost"></div>
+<div id="detach-zone"></div>
+
+<!-- TITLEBAR -->
+<div id="titlebar">
+  <div id="titlebar-top">
+  <img id="logo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8ZGVmcz4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iYmciIGN4PSI0MCUiIGN5PSIzNSUiIHI9IjY1JSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMxYTE4MzYiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMGMwYjE4Ii8+CiAgICA8L3JhZGlhbEdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJwZyIgeDE9IjMwJSIgeTE9IjEwJSIgeDI9IjcwJSIgeTI9IjkwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNmZmQxNjYiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSI0NSUiIHN0b3AtY29sb3I9IiNmNWE2MjMiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjZTg1MjBhIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGZpbHRlciBpZD0iZ2xvdyIgeD0iLTIwJSIgeT0iLTIwJSIgd2lkdGg9IjE0MCUiIGhlaWdodD0iMTQwJSI+CiAgICAgIDxmZUdhdXNzaWFuQmx1ciBzdGREZXZpYXRpb249IjIuNSIgcmVzdWx0PSJibHVyIi8+CiAgICAgIDxmZU1lcmdlPjxmZU1lcmdlTm9kZSBpbj0iYmx1ciIvPjxmZU1lcmdlTm9kZSBpbj0iU291cmNlR3JhcGhpYyIvPjwvZmVNZXJnZT4KICAgIDwvZmlsdGVyPgogIDwvZGVmcz4KICA8IS0tIENpcmNsZSBiYWNrZ3JvdW5kIC0tPgogIDxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjQ4IiBmaWxsPSJ1cmwoI2JnKSIvPgogIDwhLS0gU3VidGxlIGlubmVyIHJpbmcgLS0+CiAgPGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iNDciIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNDUsMTY2LDM1LDAuMTgpIiBzdHJva2Utd2lkdGg9IjEiLz4KICA8IS0tIEJvbGQgUCBsZXR0ZXIgLS0+CiAgPGcgZmlsdGVyPSJ1cmwoI2dsb3cpIj4KICAgIDxwYXRoIGQ9Ik0yOCAxOCBMMjggODIgTDQwIDgyIEw0MCA1OCBMNTUgNTggUTcyIDU4IDcyIDM4IFE3MiAxOCA1NSAxOCBaCiAgICAgICAgICAgICBNNDAgMjggTDUzIDI4IFE2MCAyOCA2MCAzOCBRNjAgNDggNTMgNDggTDQwIDQ4IFoiCiAgICAgICAgICBmaWxsPSJ1cmwoI3BnKSIgc3Ryb2tlPSJub25lIi8+CiAgPC9nPgogIDwhLS0gU3VidGxlIGJvdHRvbSByZWZsZWN0aW9uIC0tPgogIDxlbGxpcHNlIGN4PSI1MCIgY3k9IjkwIiByeD0iMjgiIHJ5PSI0IiBmaWxsPSJyZ2JhKDI0NSwxNjYsMzUsMC4xMikiLz4KPC9zdmc+" alt="PB">
+
+  <div id="tabs-wrap"></div>
+  <button id="btn-newtab">+</button>
+  <div id="drag-region"></div>
+  <div id="win-controls">
+    <button id="btn-min">&#8722;</button>
+    <button id="btn-max">&#9633;</button>
+    <button id="btn-close">&#10005;</button>
+  </div>
+  </div><!-- end titlebar-top -->
+</div>
+
+<!-- NAVBAR -->
+<div id="navbar">
+  <button class="nbtn" id="btn-back">&#8592;</button>
+  <button class="nbtn" id="btn-fwd">&#8594;</button>
+  <button class="nbtn" id="btn-reload">&#8635;</button>
+  <button class="nbtn" id="btn-home">⌂</button>
+  <div id="urlbar-wrap">
+    <input id="urlbar" type="text" placeholder="Search or type a URL" spellcheck="false"/>
+    <button id="btn-go">&#8594;</button>
+    <div id="suggestions"></div>
+  </div>
+  <button class="nbtn" id="btn-history" title="History">🕐</button>
+  <div id="dl-badge">
+    <button class="nbtn" id="btn-downloads" title="Downloads">⬇</button>
+    <div id="dl-badge-count"></div>
+  </div>
+  <button class="nbtn" id="btn-extensions" title="Extensions">🧩</button>
+  <button class="nbtn" id="btn-devtools" title="DevTools">⚙</button>
+  <button class="nbtn" id="btn-dotmenu" title="Menu">⋮</button>
+</div>
+
+<!-- PROGRESS -->
+<div id="progress"><div id="progress-fill"></div></div>
+
+<!-- BOOKMARKS -->
+<div id="bookmarks">
+  <button class="bm" data-url="https://youtube.com"><img class="bm-fav" src="https://www.google.com/s2/favicons?domain=youtube.com&sz=32" onerror="this.style.display='none'"> YouTube</button>
+  <button class="bm" data-url="https://github.com"><img class="bm-fav" src="https://www.google.com/s2/favicons?domain=github.com&sz=32" onerror="this.style.display='none'"> GitHub</button>
+  <button class="bm" data-url="https://reddit.com"><img class="bm-fav" src="https://www.google.com/s2/favicons?domain=reddit.com&sz=32" onerror="this.style.display='none'"> Reddit</button>
+  <button class="bm" data-url="https://x.com"><img class="bm-fav" src="https://www.google.com/s2/favicons?domain=x.com&sz=32" onerror="this.style.display='none'"> X</button>
+  <button class="bm" data-url="https://claude.ai"><img class="bm-fav" src="https://www.google.com/s2/favicons?domain=claude.ai&sz=32" onerror="this.style.display='none'"> Claude</button>
+  <button class="bm" data-url="https://vercel.com"><img class="bm-fav" src="https://www.google.com/s2/favicons?domain=vercel.com&sz=32" onerror="this.style.display='none'"> Vercel</button>
+  <button class="bm" data-url="https://google.com"><img class="bm-fav" src="https://www.google.com/s2/favicons?domain=google.com&sz=32" onerror="this.style.display='none'"> Google</button>
+</div>
+
+<!-- HOMEPAGE -->
+<div id="homepage">
+  <div id="hp-inner">
+    <div id="hp-logo"><img src="data:image/png;base64,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" style="width:28px;height:28px;border-radius:8px;object-fit:contain;box-shadow:0 4px 24px rgba(91,138,245,.25);"><span class="p1" style="margin-left:16px;">Pole</span><span class="p2">Browse</span></div>
+    <div id="hp-search-wrap">
+      <input id="hp-search" type="text" placeholder="Search the web or enter a URL..." spellcheck="false"/>
+      <button id="hp-go-btn">&#8594;</button>
+    </div>
+    <div id="hp-shortcuts">
+      <div class="sc" data-url="https://youtube.com"><div class="sc-icon"><img src="https://www.google.com/s2/favicons?domain=youtube.com&sz=64" onerror="this.replaceWith(document.createTextNode('▶'))"></div><div class="sc-label">YouTube</div></div>
+      <div class="sc" data-url="https://github.com"><div class="sc-icon"><img src="https://www.google.com/s2/favicons?domain=github.com&sz=64" onerror="this.replaceWith(document.createTextNode('⚙'))"></div><div class="sc-label">GitHub</div></div>
+      <div class="sc" data-url="https://reddit.com"><div class="sc-icon"><img src="https://www.google.com/s2/favicons?domain=reddit.com&sz=64" onerror="this.replaceWith(document.createTextNode('🟠'))"></div><div class="sc-label">Reddit</div></div>
+      <div class="sc" data-url="https://claude.ai"><div class="sc-icon"><img src="https://www.google.com/s2/favicons?domain=claude.ai&sz=64" onerror="this.replaceWith(document.createTextNode('✦'))"></div><div class="sc-label">Claude</div></div>
+      <div class="sc" data-url="https://x.com"><div class="sc-icon"><img src="https://www.google.com/s2/favicons?domain=x.com&sz=64" onerror="this.replaceWith(document.createTextNode('✕'))"></div><div class="sc-label">X</div></div>
+      <div class="sc" data-url="https://vercel.com"><div class="sc-icon"><img src="https://www.google.com/s2/favicons?domain=vercel.com&sz=64" onerror="this.replaceWith(document.createTextNode('▲'))"></div><div class="sc-label">Vercel</div></div>
+    </div>
+    <div id="hp-time"></div>
+  </div>
+</div>
+
+<!-- HISTORY PANEL -->
+<div id="history-panel" class="side-panel">
+  <div class="panel-header">
+    <h2>History</h2>
+    <button id="hist-clear" style="padding:5px 12px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--red);font-size:11px;font-family:var(--ff);cursor:pointer;">Clear</button>
+    <button class="panel-close" id="hist-close">✕</button>
+  </div>
+  <div class="panel-body" id="history-list"></div>
+</div>
+
+<!-- DOWNLOADS PANEL -->
+<div id="downloads-panel" class="side-panel">
+  <div class="panel-header">
+    <h2>Downloads</h2>
+    <button id="dl-clear">Clear Done</button>
+    <button class="panel-close" id="dl-close">✕</button>
+  </div>
+  <div class="panel-body" id="downloads-list"></div>
+</div>
+
+<!-- EXTENSIONS PAGE -->
+<div id="extensions-page">
+  <div id="ext-header">
+    <h2>🧩 Extensions</h2>
+    <div id="ext-search-wrap">
+      <input id="ext-search" type="text" placeholder="Search extensions..." spellcheck="false"/>
+    </div>
+    <button id="btn-load-unpacked" title="Load a local extension folder">📂 Load Unpacked</button>
+    <button id="btn-open-cws" title="Open Chrome Web Store">🌐 Web Store</button>
+    <button class="panel-close" id="ext-close">✕</button>
+  </div>
+  <div id="ext-tabs">
+    <button class="ext-tab active" data-tab="featured">Featured</button>
+    <button class="ext-tab" data-tab="productivity">Productivity</button>
+    <button class="ext-tab" data-tab="privacy">Privacy</button>
+    <button class="ext-tab" data-tab="devtools">Dev Tools</button>
+    <button class="ext-tab" data-tab="installed">Installed</button>
+  </div>
+  <div id="ext-body">
+    <div id="ext-grid"></div>
+  </div>
+</div>
+
+<!-- RIDELL INTERNAL PAGES -->
+<div class="ridell-page" id="ridell-downloads">
+  <div class="rp-header">
+    <div class="rp-title">⬇ Downloads</div>
+    <div class="rp-url">ridell://downloads</div>
+  </div>
+  <div class="rp-body" id="rp-dl-body"></div>
+</div>
+
+<div class="ridell-page" id="ridell-history">
+  <div class="rp-header">
+    <div class="rp-title">🕐 History</div>
+    <div class="rp-url">ridell://history</div>
+    <button class="rp-action-btn" id="rp-hist-clear">🗑 Clear All</button>
+  </div>
+  <div class="rp-body" id="rp-hist-body"></div>
+</div>
+
+<div class="ridell-page" id="ridell-extensions">
+  <div class="rp-header">
+    <div class="rp-title">🧩 Extensions</div>
+    <div class="rp-url">ridell://extensions</div>
+  </div>
+  <div class="rp-body" id="rp-ext-body">
+    <!-- reuse existing extensions page content by moving it here on open -->
+  </div>
+</div>
+
+<div class="ridell-page" id="ridell-settings">
+  <div class="rp-header">
+    <div class="rp-title">⚙ Settings</div>
+    <div class="rp-url">ridell://settings</div>
+  </div>
+  <div class="rp-body" id="rp-settings-body">
+    <div class="settings-wrap">
+
+      <div class="settings-section">
+        <div class="settings-section-title">Appearance</div>
+        <div class="settings-row">
+          <div class="settings-row-info"><div class="settings-row-label">Theme</div><div class="settings-row-desc" id="theme-desc">PoleBrowse dark theme</div></div>
+          <div class="settings-toggle-group">
+            <button class="stg-btn active" id="st-dark">Dark</button>
+            <button class="stg-btn" id="st-light">Light</button>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info"><div class="settings-row-label">Show bookmarks bar</div><div class="settings-row-desc">Always visible below the address bar</div></div>
+          <label class="st-switch"><input type="checkbox" id="st-bookmarks" checked><span class="st-slider"></span></label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info"><div class="settings-row-label">Compact tabs</div><div class="settings-row-desc">Reduce tab height</div></div>
+          <label class="st-switch"><input type="checkbox" id="st-compact-tabs"><span class="st-slider"></span></label>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Privacy & Security</div>
+        <div class="settings-row">
+          <div class="settings-row-info"><div class="settings-row-label">Save browsing history</div><div class="settings-row-desc">Store visited pages locally</div></div>
+          <label class="st-switch"><input type="checkbox" id="st-save-hist" checked><span class="st-slider"></span></label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info"><div class="settings-row-label">Clear history on exit</div><div class="settings-row-desc">Wipe history when browser closes</div></div>
+          <label class="st-switch"><input type="checkbox" id="st-clear-hist-exit"><span class="st-slider"></span></label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info"><div class="settings-row-label">Spoof as Chrome</div><div class="settings-row-desc">Send Chrome user-agent to websites</div></div>
+          <label class="st-switch"><input type="checkbox" id="st-spoof-chrome" checked><span class="st-slider"></span></label>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Search</div>
+        <div class="settings-row">
+          <div class="settings-row-info"><div class="settings-row-label">Default search engine</div><div class="settings-row-desc">Used for address bar searches</div></div>
+          <select class="st-select" id="st-search-engine">
+            <option value="ridell" selected>RidelL Search</option>
+            <option value="google">Google</option>
+            <option value="bing">Bing</option>
+            <option value="duckduckgo">DuckDuckGo</option>
+            <option value="brave">Brave Search</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Import from another browser</div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">Bookmarks &amp; History</div>
+            <div class="settings-row-desc">Import from Chrome, Edge, Brave, Firefox, or Opera</div>
+          </div>
+          <button class="st-action-btn" id="st-open-import">Import…</button>
+        </div>
+      </div>
+
+      
+      <div class="settings-section">
+        <div class="settings-section-title">Security & DNS</div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">DNS Protection</div>
+            <div class="settings-row-desc">Encrypts DNS queries using DNS-over-HTTPS to protect your browsing privacy</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span id="dns-status-dot" style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;flex-shrink:0;box-shadow:0 0 6px var(--green);"></span>
+            <span id="dns-status-label" style="font-size:11px;color:var(--green);font-family:var(--mono);">Protected</span>
+            <label class="st-switch" id="dns-toggle-wrap" title="Toggle DNS protection">
+              <input type="checkbox" id="dns-toggle" checked>
+              <span class="st-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">DNS Provider</div>
+            <div class="settings-row-desc" id="dns-provider-desc">Cloudflare · 1.1.1.1 / 1.0.0.1</div>
+          </div>
+          <select class="st-select" id="dns-provider-select">
+            <option value="cloudflare">Cloudflare (1.1.1.1)</option>
+            <option value="google">Google (8.8.8.8)</option>
+            <option value="quad9">Quad9 (9.9.9.9) — Malware blocking</option>
+            <option value="adguard">AdGuard — Ad blocking</option>
+            <option value="nextdns">NextDNS</option>
+            <option value="opendns">OpenDNS</option>
+            <option value="mullvad">Mullvad — Privacy focused</option>
+            <option value="controld">Control D</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">DNS Servers</div>
+            <div class="settings-row-desc" id="dns-ips-label">Primary: 1.1.1.1 · Secondary: 1.0.0.1</div>
+          </div>
+          <button class="st-select" id="dns-test-btn" style="cursor:pointer;border-color:var(--accent);color:var(--accent);">Test DNS</button>
+        </div>
+        <div class="settings-row" id="dns-test-result-row" style="display:none;">
+          <div class="settings-row-info">
+            <div class="settings-row-label">Test Result</div>
+            <div class="settings-row-desc" id="dns-test-result">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">About</div>
+        <div class="settings-row">
+          <div class="settings-row-info"><div class="settings-row-label">Default browser</div><div class="settings-row-desc">Open links from other apps in PoleBrowse</div></div>
+          <button class="st-action-btn" id="st-set-default">Set as default</button>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info"><div class="settings-row-label">PoleBrowse</div><div class="settings-row-desc">Built with Electron · Made by RidelL</div></div>
+          <div class="settings-version" style="display:flex;align-items:center;gap:6px;">v1.0.0</div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info"><div class="settings-row-label">Clear all browsing data</div><div class="settings-row-desc">History, downloads list, cached data</div></div>
+          <button class="st-danger-btn" id="st-clear-all">Clear data</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 3-DOT MENU -->
+<div id="dotmenu">
+  <div class="dm-section">
+    <div class="dm-item dm-item-arrow" id="dm-history"><span class="dm-icon">🕐</span><span class="dm-label">History</span><span class="dm-shortcut"></span><span class="dm-arrow">›</span></div>
+    <div class="dm-item dm-item-arrow" id="dm-downloads"><span class="dm-icon">⬇</span><span class="dm-label">Downloads</span><span class="dm-shortcut">Ctrl+J</span><span class="dm-arrow">›</span></div>
+    <div class="dm-item dm-item-arrow" id="dm-bookmarks"><span class="dm-icon">★</span><span class="dm-label">Bookmarks</span><span class="dm-shortcut"></span><span class="dm-arrow">›</span></div>
+    <div class="dm-item dm-item-arrow" id="dm-extensions-link"><span class="dm-icon">🧩</span><span class="dm-label">Extensions</span><span class="dm-shortcut"></span><span class="dm-arrow">›</span></div>
+  </div>
+  <div class="dm-sep"></div>
+  <div class="dm-section">
+    <div class="dm-item" id="dm-zoom">
+      <span class="dm-icon">🔍</span>
+      <span class="dm-label">Zoom</span>
+      <span class="dm-zoom-controls">
+        <button class="dm-zoom-btn" id="dm-zoom-out">−</button>
+        <span id="dm-zoom-val">100%</span>
+        <button class="dm-zoom-btn" id="dm-zoom-in">+</button>
+        <button class="dm-zoom-btn dm-zoom-full" id="dm-zoom-full" title="Fullscreen">⛶</button>
+      </span>
+    </div>
+  </div>
+  <div class="dm-sep"></div>
+  <div class="dm-section">
+    <div class="dm-item" id="dm-print"><span class="dm-icon">🖨</span><span class="dm-label">Print...</span><span class="dm-shortcut">Ctrl+P</span></div>
+    <div class="dm-item" id="dm-find"><span class="dm-icon">🔎</span><span class="dm-label">Find and edit</span><span class="dm-shortcut">Ctrl+F</span></div>
+    <div class="dm-item" id="dm-newtab-dm"><span class="dm-icon">＋</span><span class="dm-label">New tab</span><span class="dm-shortcut">Ctrl+T</span></div>
+    <div class="dm-item" id="dm-newwin"><span class="dm-icon">🗗</span><span class="dm-label">New window</span><span class="dm-shortcut">Ctrl+N</span></div>
+  </div>
+  <div class="dm-sep"></div>
+  <div class="dm-section">
+    <div class="dm-item" id="dm-devtools"><span class="dm-icon">⚙</span><span class="dm-label">Developer tools</span><span class="dm-shortcut">F12</span></div>
+    <div class="dm-item" id="dm-viewsrc"><span class="dm-icon">📄</span><span class="dm-label">View page source</span><span class="dm-shortcut">Ctrl+U</span></div>
+  </div>
+  <div class="dm-sep"></div>
+  <div class="dm-section">
+    <div class="dm-item" id="dm-settings"><span class="dm-icon">⚙</span><span class="dm-label">Settings</span></div>
+  </div>
+  <div class="dm-sep"></div>
+  <div class="dm-section">
+    <div class="dm-item dm-exit" id="dm-exit"><span class="dm-icon">✕</span><span class="dm-label">Exit</span></div>
+  </div>
+</div>
+
+<!-- CONTEXT MENU -->
+<div id="ctx-menu">
+  <div class="ctx-item" id="ctx-back"><span class="ctx-label">↩ Back</span><span class="ctx-shortcut">Alt+←</span></div>
+  <div class="ctx-item" id="ctx-fwd"><span class="ctx-label">↪ Forward</span><span class="ctx-shortcut">Alt+→</span></div>
+  <div class="ctx-item" id="ctx-reload"><span class="ctx-label">↻ Reload</span><span class="ctx-shortcut">Ctrl+R</span></div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" id="ctx-openlink" style="display:none"><span class="ctx-label">🔗 Open link in new tab</span></div>
+  <div class="ctx-item" id="ctx-copylink" style="display:none"><span class="ctx-label">📋 Copy link URL</span></div>
+  <div class="ctx-item" id="ctx-search" style="display:none"><span class="ctx-label">🔍 Search for selection</span></div>
+  <div class="ctx-item" id="ctx-copytext" style="display:none"><span class="ctx-label">📋 Copy selected text</span></div>
+  <div class="ctx-sep" id="ctx-sep-dynamic" style="display:none"></div>
+  <div class="ctx-item" id="ctx-saveas"><span class="ctx-label">💾 Save as...</span><span class="ctx-shortcut">Ctrl+S</span></div>
+  <div class="ctx-item" id="ctx-print"><span class="ctx-label">🖨 Print...</span><span class="ctx-shortcut">Ctrl+P</span></div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" id="ctx-newtab"><span class="ctx-label">＋ Open in new tab</span></div>
+  <div class="ctx-item" id="ctx-copyurl"><span class="ctx-label">🔗 Copy page URL</span></div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" id="ctx-viewsrc"><span class="ctx-label">📄 View page source</span><span class="ctx-shortcut">Ctrl+U</span></div>
+  <div class="ctx-item" id="ctx-inspect"><span class="ctx-label">🔧 Inspect</span></div>
+</div>
+
+<!-- TOAST -->
+<div class="ext-toast" id="ext-toast"></div>
+
+<script>
+'use strict';
+
+// ── CURATED EXTENSIONS DB
+// Each entry: { id, name, author, description, icon, rating, users, category }
+const EXT_DB = [
+  // Featured
+  { id:'cjpalhdlnbpafiamejdnhcphjbkeiagm', name:'uBlock Origin', author:'Raymond Hill', description:'Finally, an efficient wide-spectrum content blocker. Easy on CPU and memory.', icon:'🛡️', rating:'4.8', users:'10M+', category:['featured','privacy'] },
+  { id:'chklaanhfefbnpoihckbnefhakgolnmc', name:'SponsorBlock', author:'ajayyy', description:'Skip sponsors, intros, outros, and more on YouTube automatically.', icon:'⏭️', rating:'4.9', users:'3M+', category:['featured','productivity'] },
+  { id:'nkbihfbeogaeaoehlefnkodbefgpgknn', name:'MetaMask', author:'MetaMask', description:'Ethereum browser extension for crypto wallets and Web3 apps.', icon:'🦊', rating:'4.5', users:'5M+', category:['featured'] },
+  { id:'hdokiejnpimakedhajhdlcegeplioahd', name:'LastPass', author:'LastPass', description:'Secure password manager with autofill and password generator.', icon:'🔑', rating:'4.3', users:'7M+', category:['featured','privacy'] },
+  // Productivity
+  { id:'gighmmpiobklfepjocnamgkkbiglidom', name:'AdBlock', author:'AdBlock', description:'Block ads and pop-ups on YouTube, Facebook, and all other websites.', icon:'🚫', rating:'4.6', users:'40M+', category:['productivity','privacy'] },
+  { id:'dbepggeogbaibhgnhhndojpepiihcmeb', name:'Vimium', author:'Phil Crosby', description:'Provides keyboard shortcuts for navigation and control in the spirit of Vim.', icon:'⌨️', rating:'4.8', users:'1M+', category:['productivity'] },
+  { id:'eimadpbcbfnmbkopoojfekhnkhdbieeh', name:'Dark Reader', author:'Dark Reader', description:'Dark mode for every website. Take care of your eyes, use dark theme for night and daily browsing.', icon:'🌙', rating:'4.7', users:'5M+', category:['productivity','featured'] },
+  { id:'fmkadmapgofadopljbjfkapdkoienihi', name:'React DevTools', author:'Facebook', description:'Adds React debugging tools to the Chrome Developer Tools.', icon:'⚛️', rating:'4.7', users:'3M+', category:['devtools'] },
+  // Privacy
+  { id:'pkehgijcmpdhfbdbbnkijodmdjhbjlgp', name:'Privacy Badger', author:'EFF', description:'Privacy Badger automatically learns to block invisible trackers.', icon:'🦡', rating:'4.5', users:'1M+', category:['privacy'] },
+  { id:'gcbommkclmclpchllfjekcdonpmejbdp', name:'HTTPS Everywhere', author:'EFF', description:'Encrypt the web! Automatically use HTTPS security on many sites.', icon:'🔒', rating:'4.6', users:'2M+', category:['privacy'] },
+  { id:'ookhnhpkphagefgdiemllfajmkdkcaim', name:'Cookie AutoDelete', author:'Kenny Do', description:'Automatically deletes unused cookies from your closed tabs.', icon:'🍪', rating:'4.5', users:'500K+', category:['privacy'] },
+  // Dev Tools
+  { id:'bfbameneiokkgbdmiekhjnmfkcnldhhm', name:'Web Developer', author:'Chris Pederick', description:'Adds a toolbar button with various web developer tools.', icon:'🛠️', rating:'4.5', users:'1M+', category:['devtools'] },
+  { id:'ienfalfjdbdpebioblfackkekamfmbnh', name:'JSON Formatter', author:'Callum Locke', description:'Makes JSON easy to read. Open source.', icon:'📋', rating:'4.7', users:'1M+', category:['devtools'] },
+  { id:'hgmloofddffdnphfgcellkdfbfbjeloo', name:'ColorZilla', author:'ColorZilla', description:'Advanced Eyedropper, Color Picker, Gradient Generator and other colorful goodies.', icon:'🎨', rating:'4.6', users:'3M+', category:['devtools'] },
+];
+
+let installedIds = new Set();
+let currentTab = 'featured';
+let searchQuery = '';
+
+// ── STATE
+let tabs = [], activeId = null, tid = 0;
+let hist = JSON.parse(localStorage.getItem('pb_hist') || '[]');
+let downloads = {};
+let activeDownloads = 0;
+
+function fixUrl(raw) {
+  raw = (raw || '').trim();
+  if (!raw) return null;
+  if (/^ridell:\/\//.test(raw)) return raw;
+  if (/^https?:\/\//.test(raw)) return raw;
+  if (/^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}/.test(raw) && !raw.includes(' ')) return 'https://' + raw;
+  const base = window._searchBase || 'https://ridell-page-search.lovable.app/search?q=';
+  return base + encodeURIComponent(raw);
+}
+
+function fmtBytes(b) {
+  if (!b) return '?';
+  if (b < 1024) return b + ' B';
+  if (b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
+  return (b/1024/1024).toFixed(1) + ' MB';
+}
+
+function fileIcon(name) {
+  const ext = (name.split('.').pop() || '').toLowerCase();
+  const map = { pdf:'📄', zip:'🗜', rar:'🗜', '7z':'🗜', mp4:'🎬', mkv:'🎬', mp3:'🎵', png:'🖼', jpg:'🖼', jpeg:'🖼', gif:'🖼', exe:'⚙', msi:'⚙', dmg:'💿', apk:'📱' };
+  return map[ext] || '📥';
+}
+
+// ── TIME
+function tick() {
+  const el = document.getElementById('hp-time');
+  if (el) el.textContent = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+setInterval(tick, 1000); tick();
+
+// ── PROGRESS
+function progStart() {
+  const f = document.getElementById('progress-fill');
+  f.style.transition = 'none'; f.style.width = '0%';
+  requestAnimationFrame(() => {
+    f.style.transition = 'width 0.3s ease';
+    setTimeout(() => f.style.width = '40%', 20);
+    setTimeout(() => f.style.width = '70%', 500);
+    setTimeout(() => f.style.width = '88%', 1200);
+  });
+}
+function progEnd() {
+  const f = document.getElementById('progress-fill');
+  f.style.width = '100%';
+  setTimeout(() => { f.style.transition = 'none'; f.style.width = '0%'; }, 350);
+}
+
+// ── TOAST
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('ext-toast');
+  const prefix = type === 'success' ? '✓ ' : type === 'error' ? '✕ ' : '⏳ ';
+  t.textContent = prefix + msg;
+  t.className = `ext-toast show ${type}`;
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ── PANELS
+function closeAllPanels() {
+  document.getElementById('history-panel').classList.remove('open');
+  document.getElementById('downloads-panel').classList.remove('open');
+  document.getElementById('extensions-page').classList.remove('open');
+  document.querySelectorAll('.nbtn').forEach(b => b.classList.remove('active-panel'));
+}
+
+function togglePanel(panelId, btnId) {
+  const panel = document.getElementById(panelId);
+  const isOpen = panel.classList.contains('open');
+  closeAllPanels();
+  window.ipc.send('view-hide');
+  document.getElementById('homepage').style.display = 'none';
+  if (!isOpen) {
+    panel.classList.add('open');
+    if (btnId) document.getElementById(btnId).classList.add('active-panel');
+  } else {
+    showActiveTab();
+  }
+}
+
+// ── EXTENSIONS
+async function loadInstalledList() {
+  const list = await window.ipc.invoke('ext-list-installed');
+  installedIds = new Set(list.map(e => e.id));
+}
+
+function renderExtensions() {
+  const grid = document.getElementById('ext-grid');
+  let items;
+
+  if (currentTab === 'installed') {
+    items = EXT_DB.filter(e => installedIds.has(e.id));
+    if (items.length === 0) {
+      grid.innerHTML = '<div class="panel-empty" style="margin-top:60px;font-size:14px;">No extensions installed yet.<br><span style="font-size:12px;margin-top:8px;display:block;">Browse the other tabs to find extensions.</span></div>';
+      return;
+    }
+  } else {
+    items = EXT_DB.filter(e => e.category.includes(currentTab));
+  }
+
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    items = EXT_DB.filter(e => e.name.toLowerCase().includes(q) || e.description.toLowerCase().includes(q));
+  }
+
+  grid.innerHTML = items.map(ext => {
+    const installed = installedIds.has(ext.id);
+    return `
+      <div class="ext-card">
+        <div class="ext-card-top">
+          <div class="ext-img">${ext.icon}</div>
+          <div class="ext-meta">
+            <div class="ext-name">${ext.name}</div>
+            <div class="ext-author">${ext.author}</div>
+            <div class="ext-stats">
+              <div class="ext-stat">⭐ ${ext.rating}</div>
+              <div class="ext-stat">👥 ${ext.users}</div>
+            </div>
+          </div>
+        </div>
+        <div class="ext-desc">${ext.description}</div>
+        <div class="ext-actions">
+          <button class="ext-install-btn ${installed ? 'installed' : ''}" data-id="${ext.id}" data-name="${ext.name}" data-installed="${installed}">
+            ${installed ? '✓ Remove' : '⬇ Install'}
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  grid.querySelectorAll('.ext-install-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      const name = btn.dataset.name;
+      const installed = btn.dataset.installed === 'true';
+
+      if (installed) {
+        btn.textContent = 'Removing...';
+        btn.disabled = true;
+        try {
+          await window.ipc.invoke('ext-uninstall', { extId: id });
+          installedIds.delete(id);
+          showToast(`${name} removed`, 'success');
+          renderExtensions();
+        } catch (err) {
+          showToast(`Failed: ${err.message}`, 'error');
+          btn.disabled = false;
+        }
+      } else {
+        btn.textContent = '⏳ Installing...';
+        btn.classList.add('installing');
+        btn.disabled = true;
+        try {
+          await window.ipc.invoke('ext-install', { extId: id });
+          installedIds.add(id);
+          showToast(`${name} installed! Restart to apply.`, 'success');
+          renderExtensions();
+        } catch (err) {
+          showToast(`Failed: ${err.message}`, 'error');
+          btn.disabled = false;
+          btn.classList.remove('installing');
+          btn.textContent = '⬇ Install';
+        }
+      }
+    });
+  });
+}
+
+// Wire buttons after DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+  // ── PANEL & MISC BINDINGS (moved from top-level)
+  document.getElementById('btn-extensions').onclick = async () => {
+    const page = document.getElementById('extensions-page');
+    const isOpen = page.classList.contains('open');
+    closeAllPanels();
+    window.ipc.send('view-hide');
+    document.getElementById('homepage').style.display = 'none';
+    if (!isOpen) {
+      page.classList.add('open');
+      document.getElementById('btn-extensions').classList.add('active-panel');
+      await loadInstalledList();
+      renderExtensions();
+    } else {
+      showActiveTab();
+    }
+  };
+
+  document.getElementById('ext-close').onclick = () => { closeAllPanels(); showActiveTab(); };
+
+  document.getElementById('btn-load-unpacked').onclick = async () => {
+    const result = await window.ipc.invoke('ext-load-unpacked');
+    if (result && result.canceled) return;
+    if (result && result.success) {
+      showToast(`✓ "${result.name}" loaded`, 'success');
+      await loadInstalledList();
+      currentTab = 'installed';
+      document.querySelectorAll('.ext-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector('.ext-tab[data-tab="installed"]').classList.add('active');
+      renderExtensions();
+    } else if (result && result.error) {
+      showToast(`Failed: ${result.error}`, 'error');
+    }
+  };
+
+  document.getElementById('btn-open-cws').onclick = () => {
+    closeAllPanels();
+    newTab('https://chromewebstore.google.com/');
+  };
+
+  document.querySelectorAll('.ext-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.ext-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentTab = tab.dataset.tab;
+      searchQuery = '';
+      document.getElementById('ext-search').value = '';
+      renderExtensions();
+    });
+  });
+
+  document.getElementById('ext-search').addEventListener('input', e => {
+    searchQuery = e.target.value;
+    if (searchQuery) {
+      document.querySelectorAll('.ext-tab').forEach(t => t.classList.remove('active'));
+    }
+    renderExtensions();
+  });
+
+  // ── HISTORY
+  function addHist(url, title) {
+    hist.unshift({ url, title: title || url, time: Date.now() });
+    if (hist.length > 200) hist = hist.slice(0, 200);
+    localStorage.setItem('pb_hist', JSON.stringify(hist));
+  }
+  function renderHist() {
+    const list = document.getElementById('history-list');
+    if (!hist.length) { list.innerHTML = '<div class="panel-empty">No history yet.</div>'; return; }
+    list.innerHTML = hist.map((h, i) => {
+      const fav = favUrl(h.url);
+      return `
+      <div class="hist-item" data-i="${i}">
+        ${fav ? `<img class="hist-fav" src="${fav}" onerror="this.style.display='none'">` : ''}
+        <div class="hist-url">${h.url}</div>
+        <div class="hist-title">${h.title}</div>
+        <div class="hist-time">${new Date(h.time).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>
+      </div>
+    `}).join('');
+    list.querySelectorAll('.hist-item').forEach(el => {
+      el.addEventListener('click', () => { closeAllPanels(); navigate(hist[+el.dataset.i].url); });
+    });
+  }
+  document.getElementById('btn-history').onclick = () => { renderHist(); togglePanel('history-panel', 'btn-history'); };
+  document.getElementById('hist-close').onclick = () => { closeAllPanels(); showActiveTab(); };
+  document.getElementById('hist-clear').onclick = () => { hist = []; localStorage.removeItem('pb_hist'); renderHist(); };
+
+  // ── DOWNLOADS
+  function renderDownloads() {
+    const list = document.getElementById('downloads-list');
+    const items = Object.values(downloads).reverse();
+    if (!items.length) { list.innerHTML = '<div class="panel-empty">No downloads yet.</div>'; return; }
+    list.innerHTML = items.map(d => {
+      const pct = d.total ? Math.round((d.received / d.total) * 100) : 0;
+      const isDone = d.state === 'completed', isFail = d.state === 'interrupted' || d.state === 'cancelled', isActive = d.state === 'progressing';
+      return `<div class="dl-item">
+        <div class="dl-item-top">
+          <div class="dl-icon">${fileIcon(d.filename)}</div>
+          <div class="dl-info">
+            <div class="dl-name">${d.filename}</div>
+            <div class="dl-size">${isDone ? fmtBytes(d.total) : isActive ? fmtBytes(d.received)+' / '+fmtBytes(d.total) : ''}</div>
+          </div>
+          <div class="dl-actions">
+            ${isDone ? `<button class="dl-btn open-btn" onclick="window.ipc.send('open-file',{path:'${d.savePath?.replace(/\\/g,'\\\\')}'})">▶ Open</button>
+            <button class="dl-btn" onclick="window.ipc.send('show-file',{path:'${d.savePath?.replace(/\\/g,'\\\\')}'})">📁</button>` : ''}
+          </div>
+        </div>
+        ${isActive ? `<div class="dl-bar-wrap"><div class="dl-bar" style="width:${pct}%"></div></div>` : ''}
+        <div class="dl-status ${isDone?'done':isFail?'fail':'prog'}">${isDone?'✓ Complete':isFail?'✕ Failed':pct+'% — downloading...'}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function updateDlBadge() {
+    const badge = document.getElementById('dl-badge-count');
+    if (activeDownloads > 0) { badge.textContent = activeDownloads; badge.classList.add('show'); }
+    else badge.classList.remove('show');
+  }
+
+  window.ipc.on('download-start', (data) => { downloads[data.id] = { ...data, received:0, state:'progressing' }; activeDownloads++; updateDlBadge(); if (document.getElementById('downloads-panel').classList.contains('open')) renderDownloads(); });
+  window.ipc.on('download-update', (data) => { if (downloads[data.id]) { downloads[data.id].received = data.received; downloads[data.id].total = data.total; if (document.getElementById('downloads-panel').classList.contains('open')) renderDownloads(); } });
+  window.ipc.on('download-done', (data) => {
+    if (downloads[data.id]) {
+      downloads[data.id].state = data.state; downloads[data.id].savePath = data.savePath;
+      activeDownloads = Math.max(0, activeDownloads - 1); updateDlBadge();
+      if (data.state === 'completed') { closeAllPanels(); document.getElementById('downloads-panel').classList.add('open'); document.getElementById('btn-downloads').classList.add('active-panel'); window.ipc.send('view-hide'); document.getElementById('homepage').style.display = 'none'; }
+      renderDownloads();
+    }
+  });
+
+  document.getElementById('btn-downloads').onclick = () => { renderDownloads(); togglePanel('downloads-panel', 'btn-downloads'); };
+  document.getElementById('dl-close').onclick = () => { closeAllPanels(); showActiveTab(); };
+  document.getElementById('dl-clear').onclick = () => { Object.keys(downloads).forEach(id => { if (downloads[id].state !== 'progressing') delete downloads[id]; }); renderDownloads(); };
+
+  // ── TAB DRAG DETACH
+  let dragTab = null;
+  let dragStartY = 0;
+  let dragActive = false;
+  const ghost = document.getElementById('detach-ghost');
+
+  document.addEventListener('mousemove', (e) => {
+    if (!dragTab) return;
+    ghost.style.left = e.clientX + 12 + 'px';
+    ghost.style.top = e.clientY + 8 + 'px';
+    // If dragged below titlebar (y > 50), show ghost and mark as detaching
+    if (e.clientY > 50 && !dragActive) {
+      dragActive = true;
+      ghost.classList.add('show');
+      document.getElementById('tabs-wrap').querySelectorAll('.tab').forEach(t => {
+        if (t._tabId === dragTab.id) t.classList.add('dragging');
+      });
+    }
+    if (e.clientY <= 50 && dragActive) {
+      dragActive = false;
+      ghost.classList.remove('show');
+      document.getElementById('tabs-wrap').querySelectorAll('.tab').forEach(t => t.classList.remove('dragging'));
+    }
+  });
+
+  document.addEventListener('mouseup', (e) => {
+    if (!dragTab) return;
+    ghost.classList.remove('show');
+    document.getElementById('tabs-wrap').querySelectorAll('.tab').forEach(t => t.classList.remove('dragging'));
+    if (dragActive && dragTab.url) {
+      // Pass screen coordinates so main can find the target window
+      window.ipc.send('detach-tab', {
+        url: dragTab.url,
+        title: dragTab.title,
+        x: window.screenX + e.clientX,
+        y: window.screenY + e.clientY,
+      });
+      closeTab(dragTab.id);
+    }
+    dragTab = null;
+    dragActive = false;
+  });
+
+  function startTabDrag(tab, e) {
+    if (e.target.classList.contains('tab-x')) return;
+    dragTab = tab;
+    dragStartY = e.clientY;
+    dragActive = false;
+    ghost.textContent = tab.title;
+    ghost.style.left = e.clientX + 12 + 'px';
+    ghost.style.top = e.clientY + 8 + 'px';
+  }
+
+  // ── EXT STATUS from CWS installs (also used by built-in store)
+  window.ipc.on('ext-status', (data) => {
+    const msgs = {
+      downloading: '⬇ Downloading extension...',
+      extracting: '📦 Extracting...',
+      loading: '⚙ Loading extension...',
+      installed: '✓ Installed! Active immediately.',
+      already: '✓ Already installed',
+      error: '✕ ' + (data.message || 'Install failed'),
+    };
+    const msg = msgs[data.status];
+    if (!msg) return;
+    const isErr = data.status === 'error';
+    const isDone = data.status === 'installed' || data.status === 'already';
+    showToast(msg.slice(2), isDone ? 'success' : isErr ? 'error' : 'info');
+    // Refresh installed list if on extensions page
+    if (document.getElementById('extensions-page').classList.contains('open')) {
+      loadInstalledList().then(() => renderExtensions());
+    }
+  });
+
+  // ── OPEN URL ON START (for detached windows)
+  // ── EXTERNAL PROTOCOL POPUP ─────────────────────────────────────────────────
+  (function() {
+    const overlay = document.getElementById('proto-popup-overlay');
+    const urlEl   = document.getElementById('pp-url');
+    const yesBtn  = document.getElementById('pp-yes');
+    const noBtn   = document.getElementById('pp-no');
+    let _pendingUrl = null;
+
+    function showProtoPopup(url) {
+      _pendingUrl = url;
+      // truncate very long URLs for display
+      urlEl.textContent = url.length > 120 ? url.slice(0, 117) + '…' : url;
+      // label the button with the scheme
+      try {
+        const scheme = new URL(url).protocol.replace(':', '');
+        yesBtn.textContent = 'Open ' + scheme + '://';
+      } catch { yesBtn.textContent = 'Open App'; }
+      overlay.classList.add('open');
+    }
+
+    function closeProtoPopup() {
+      overlay.classList.remove('open');
+      _pendingUrl = null;
+    }
+
+    yesBtn.onclick = () => {
+      if (_pendingUrl) window.ipc.send('proto-open-external', { url: _pendingUrl });
+      closeProtoPopup();
+    };
+    noBtn.onclick = closeProtoPopup;
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeProtoPopup(); });
+
+    window.ipc.on('proto-launch-request', (data) => {
+      showProtoPopup(data.url);
+    });
+  })();
+
+  window.ipc.on('open-url-on-start', (data) => {
+    navigate(data.url);
+  });
+
+  // ── RECEIVE TAB (merged from another window)
+  window.ipc.on('receive-tab', (data) => {
+    newTab(data.url);
+  });
+  function closeAllRidellPages() {
+    ['ridell-downloads','ridell-history','ridell-extensions','ridell-settings','ridell-no-internet','ridell-dangerous'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('open');
+    });
+  }
+
+  function openRidellPage(page) {
+    closeAllRidellPages();
+    const el = document.getElementById('ridell-' + page);
+    if (!el) return;
+    el.classList.add('open');
+    if (page === 'history') renderHist();
+    if (page === 'downloads') renderDownloads();
+    if (page === 'extensions') { loadInstalledList().then(() => renderExtensions()); }
+    if (page === 'settings') renderSettings();
+  }
+
+  function showActiveTab() {
+    const tab = tabs.find(t => t.id === activeId);
+    if (!tab) return;
+    closeAllPanels();
+    if (tab.url && tab.url.startsWith('ridell://')) {
+      closeAllRidellPages();
+      window.ipc.send('view-hide');
+      document.getElementById('homepage').style.display = 'none';
+      document.getElementById('urlbar').value = tab.url;
+      const page = tab.url.replace('ridell://', '').replace(/\/$/, '');
+      openRidellPage(page);
+    } else if (tab.url) {
+      closeAllRidellPages();
+      document.getElementById('homepage').style.display = 'none';
+      document.getElementById('urlbar').value = tab.url;
+      window.ipc.send('view-show', { tabId: tab.id });
+    } else {
+      closeAllRidellPages();
+      window.ipc.send('view-hide');
+      document.getElementById('homepage').style.display = 'flex';
+      document.getElementById('urlbar').value = '';
+    }
+  }
+
+  window.ipc.on('view-event', (data) => {
+    const tab = tabs.find(t => t.id === data.tabId);
+    if (!tab) return;
+    if (data.type === 'loading') { if (activeId === data.tabId) progStart(); }
+    if (data.type === 'loaded') {
+      if (activeId === data.tabId) { progEnd(); document.getElementById('urlbar').value = data.url; }
+      tab.url = data.url; tab.title = data.title || data.url;
+      tab.fav = favUrl(data.url);
+      addHist(data.url, data.title); renderTabs(); updateNav();
+    }
+    if (data.type === 'navigate') { tab.url = data.url; if (activeId === data.tabId) document.getElementById('urlbar').value = data.url; }
+    if (data.type === 'title') { tab.title = data.title; renderTabs(); }
+    if (data.type === 'new-window') { newTab(data.url); }
+  });
+
+  // ── FAVICON
+  function favUrl(url) {
+    try { return `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=32`; }
+    catch { return null; }
+  }
+
+  // ── TABS
+  function getTab(id) { return tabs.find(t => t.id === id); }
+
+  function newTab(url) {
+    const id = ++tid;
+    tabs.push({ id, url: url || null, title: 'New Tab', fav: null });
+    renderTabs(); switchTab(id);
+    if (url) navigate(url, id);
+  }
+
+  function closeTab(id) {
+    const idx = tabs.findIndex(t => t.id === id);
+    window.ipc.send('view-destroy', { tabId: id });
+    tabs = tabs.filter(t => t.id !== id);
+    if (!tabs.length) { newTab(null); return; }
+    if (activeId === id) switchTab(tabs[Math.min(idx, tabs.length-1)].id);
+    renderTabs();
+  }
+
+  function switchTab(id) { activeId = id; showActiveTab(); renderTabs(); updateNav(); }
+
+  function renderTabs() {
+    const wrap = document.getElementById('tabs-wrap');
+    wrap.innerHTML = '';
+    tabs.forEach(tab => {
+      const el = document.createElement('div');
+      el._tabId = tab.id;
+      el.className = 'tab' + (tab.id === activeId ? ' active' : '');
+      const favImg = tab.fav ? `<img class="tab-fav" src="${tab.fav}" onerror="this.style.display='none'">` : `<img class="tab-fav" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6' fill='%236a6a80'/%3E%3C/svg%3E">`;
+      el.innerHTML = `${favImg}<span class="tab-title">${tab.title}</span><button class="tab-x">✕</button>`;
+      el.addEventListener('mousedown', (e) => { if (!e.target.classList.contains('tab-x')) startTabDrag(tab, e); });
+      el.addEventListener('click', e => { if (!e.target.classList.contains('tab-x')) switchTab(tab.id); });
+      el.querySelector('.tab-x').addEventListener('click', e => { e.stopPropagation(); closeTab(tab.id); });
+      wrap.appendChild(el);
+    });
+  }
+
+  function navigate(raw, tabId) {
+    const url = fixUrl(raw);
+    if (!url) return;
+    const id = tabId !== undefined ? tabId : activeId;
+    const tab = getTab(id);
+    if (!tab) return;
+
+    // Handle ridell:// internal pages
+    if (url.startsWith('ridell://')) {
+      const page = url.replace('ridell://', '').replace(/\/$/, '');
+      tab.url = url;
+      tab.title = ({ downloads:'Downloads', history:'History', extensions:'Extensions', settings:'Settings' })[page] || page;
+      if (id === activeId) {
+        document.getElementById('urlbar').value = url;
+        document.getElementById('homepage').style.display = 'none';
+        window.ipc.send('view-hide');
+        closeAllPanels();
+        openRidellPage(page);
+      }
+      renderTabs(); updateNav();
+      return;
+    }
+
+    tab.url = url;
+    if (id === activeId) {
+      closeAllPanels();
+      closeAllRidellPages();
+      document.getElementById('homepage').style.display = 'none';
+      document.getElementById('urlbar').value = url;
+    }
+    window.ipc.send('view-navigate', { tabId: id, url });
+    if (id === activeId) progStart();
+    updateNav();
+  }
+
+  function updateNav() {
+    const tab = getTab(activeId);
+    const has = tab && !!tab.url;
+    document.getElementById('btn-back').disabled = !has;
+    document.getElementById('btn-fwd').disabled = !has;
+    document.getElementById('btn-devtools').disabled = !has;
+  }
+
+  // ── CONTROLS (bound in DOMContentLoaded below)
+  // ── SUGGESTIONS ENGINE ──────────────────────────────────────────────────────
+  (function() {
+    const urlbar  = document.getElementById('urlbar');
+    const sgBox   = document.getElementById('suggestions');
+    let sgIdx     = -1;   // keyboard-selected item index
+    let sgItems   = [];   // flat list of current <button.sg-item> nodes
+    let ddgTimer  = null; // debounce handle for DDG fetch
+
+    function faviconUrl(url) {
+      try { return 'https://www.google.com/s2/favicons?domain=' + new URL(url).hostname + '&sz=32'; }
+      catch { return null; }
+    }
+
+    function closeSg() {
+      sgBox.classList.remove('open');
+      sgBox.innerHTML = '';
+      sgItems = [];
+      sgIdx = -1;
+    }
+
+    function buildItem(icon, title, subtitle, badge, onPick) {
+      const btn = document.createElement('button');
+      btn.className = 'sg-item';
+
+      // icon
+      if (icon && icon.startsWith('http')) {
+        const img = document.createElement('img');
+        img.className = 'sg-icon';
+        img.src = icon;
+        img.onerror = () => { img.style.display='none'; };
+        btn.appendChild(img);
+      } else {
+        const sp = document.createElement('span');
+        sp.className = 'sg-icon-char';
+        sp.textContent = icon || '🔍';
+        btn.appendChild(sp);
+      }
+
+      // text
+      const txt = document.createElement('span');
+      txt.className = 'sg-text';
+      const t1 = document.createElement('div');
+      t1.className = 'sg-title';
+      t1.textContent = title;
+      txt.appendChild(t1);
+      if (subtitle) {
+        const t2 = document.createElement('div');
+        t2.className = 'sg-url';
+        t2.textContent = subtitle;
+        txt.appendChild(t2);
+      }
+      btn.appendChild(txt);
+
+      // badge
+      if (badge) {
+        const b = document.createElement('span');
+        b.className = 'sg-badge';
+        b.textContent = badge;
+        btn.appendChild(b);
+      }
+
+      btn.addEventListener('mousedown', e => {
+        e.preventDefault(); // don't blur urlbar yet
+        onPick();
+      });
+      return btn;
+    }
+
+    function section(label, items) {
+      if (!items.length) return null;
+      const wrap = document.createElement('div');
+      wrap.className = 'sg-section';
+      if (label) {
+        const lbl = document.createElement('div');
+        lbl.className = 'sg-label';
+        lbl.textContent = label;
+        wrap.appendChild(lbl);
+      }
+      items.forEach(it => wrap.appendChild(it));
+      return wrap;
+    }
+
+    function renderSg(histMatches, bmMatches, ddgMatches, query) {
+      sgBox.innerHTML = '';
+      sgItems = [];
+      const pick = url => { closeSg(); navigate(url); };
+      const search = q => { closeSg(); navigate(q); };
+
+      // 1. Top search suggestion (always first if there's a query)
+      const searchItems = [];
+      if (query) {
+        const si = buildItem('🔍', query, null, 'Search', () => search(query));
+        searchItems.push(si);
+      }
+
+      // 2. History matches
+      const histItems = histMatches.slice(0,4).map(h =>
+        buildItem(faviconUrl(h.url), h.title || h.url, h.url, 'History', () => pick(h.url))
+      );
+
+      // 3. Bookmark matches
+      const bmItems = bmMatches.slice(0,3).map(b =>
+        buildItem(faviconUrl(b.url), b.title || b.url, b.url, 'Bookmark', () => pick(b.url))
+      );
+
+      // 4. DDG suggestions
+      const ddgItems = ddgMatches.slice(0,5).map(s =>
+        buildItem('🔍', s, null, null, () => search(s))
+      );
+
+      const s1 = section(null, searchItems);
+      const s2 = section('History', histItems);
+      const s3 = section('Bookmarks', bmItems);
+      const s4 = section('Suggestions', ddgItems);
+
+      [s1, s2, s3, s4].forEach(s => { if (s) sgBox.appendChild(s); });
+
+      // collect all items for keyboard nav
+      sgItems = Array.from(sgBox.querySelectorAll('.sg-item'));
+
+      if (sgItems.length) sgBox.classList.add('open');
+      else sgBox.classList.remove('open');
+    }
+
+    function matchHistory(q) {
+      const ql = q.toLowerCase();
+      return (window._pb_hist || []).filter(h =>
+        (h.url && h.url.toLowerCase().includes(ql)) ||
+        (h.title && h.title.toLowerCase().includes(ql))
+      ).slice(0, 5);
+    }
+
+    function matchBookmarks(q) {
+      const ql = q.toLowerCase();
+      return (JSON.parse(localStorage.getItem('pb_bookmarks') || '[]')).filter(b =>
+        (b.url && b.url.toLowerCase().includes(ql)) ||
+        (b.title && b.title.toLowerCase().includes(ql))
+      ).slice(0, 4);
+    }
+
+    async function fetchSuggestions(q) {
+      try {
+        const results = await window.ipc.invoke('autocomplete', { query: q });
+        // results = [{ type, text, relevance }, ...]
+        return (results || []).map(r => r.text).filter(Boolean);
+      } catch { return []; }
+    }
+
+    function onInput() {
+      const q = urlbar.value.trim();
+      if (!q) { closeSg(); return; }
+
+      const hist = matchHistory(q);
+      const bm   = matchBookmarks(q);
+      renderSg(hist, bm, [], q); // render immediately with local results
+
+      // debounce DDG
+      clearTimeout(ddgTimer);
+      ddgTimer = setTimeout(async () => {
+        const ddg = await fetchSuggestions(q);
+        if (urlbar.value.trim() === q) renderSg(hist, bm, ddg, q);
+      }, 180);
+    }
+
+    function setActive(idx) {
+      sgItems.forEach((el, i) => el.classList.toggle('active', i === idx));
+      sgIdx = idx;
+    }
+
+    urlbar.addEventListener('input', onInput);
+
+    urlbar.addEventListener('keydown', e => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setActive(Math.min(sgIdx + 1, sgItems.length - 1));
+        if (sgIdx >= 0) urlbar.value = sgItems[sgIdx].querySelector('.sg-title').textContent;
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setActive(Math.max(sgIdx - 1, -1));
+        if (sgIdx >= 0) urlbar.value = sgItems[sgIdx].querySelector('.sg-title').textContent;
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (sgIdx >= 0 && sgItems[sgIdx]) {
+          sgItems[sgIdx].dispatchEvent(new MouseEvent('mousedown'));
+        } else {
+          closeSg();
+          navigate(urlbar.value);
+        }
+      } else if (e.key === 'Escape') {
+        closeSg();
+        urlbar.blur();
+      }
+    });
+
+    urlbar.addEventListener('focus', () => {
+      urlbar.select();
+      if (urlbar.value.trim()) onInput();
+    });
+
+    urlbar.addEventListener('blur', () => {
+      // small delay so mousedown on item fires first
+      setTimeout(closeSg, 150);
+    });
+  })();
+
+  // all button bindings moved into DOMContentLoaded below
+
+  // ── CONTEXT MENU
+  const ctxMenu = document.getElementById('ctx-menu');
+
+  function showCtx(x, y) {
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    ctxMenu.classList.add('show');
+    const tab = getTab(activeId);
+    const hasPage = tab && !!tab.url;
+    ['ctx-back','ctx-fwd','ctx-reload','ctx-saveas','ctx-print','ctx-viewsrc','ctx-inspect','ctx-copyurl'].forEach(id => {
+      document.getElementById(id).classList.toggle('disabled', !hasPage);
+    });
+    // Show dynamic separator only if link/text items are visible
+    const hasDynamic = ['ctx-openlink','ctx-copylink','ctx-search','ctx-copytext'].some(id => document.getElementById(id).style.display !== 'none');
+    document.getElementById('ctx-sep-dynamic').style.display = hasDynamic ? '' : 'none';
+    requestAnimationFrame(() => {
+      const r = ctxMenu.getBoundingClientRect();
+      if (r.right > window.innerWidth) ctxMenu.style.left = (x - r.width) + 'px';
+      if (r.bottom > window.innerHeight) ctxMenu.style.top = (y - r.height) + 'px';
+    });
+  }
+
+  function hideCtx() {
+    ctxMenu.classList.remove('show');
+    // Restore view if we hid it to show the menu
+    if (ctxMenu._viewHidden) {
+      ctxMenu._viewHidden = false;
+      window.ipc.send('view-show', { tabId: activeId });
+    }
+  }
+  document.addEventListener('mousedown', e => {
+    if (!ctxMenu.classList.contains('show')) return;
+    if (!ctxMenu.contains(e.target)) hideCtx();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtx(); });
+  document.addEventListener('contextmenu', e => {
+    if (e.target.closest('input,textarea')) return;
+    e.preventDefault();
+    // Hide link/text items when right-clicking the browser UI
+    ['ctx-openlink','ctx-copylink','ctx-search','ctx-copytext'].forEach(id => {
+      document.getElementById(id).style.display = 'none';
+    });
+    ctxMenu._linkURL = null;
+    ctxMenu._selectionText = null;
+    showCtx(e.clientX, e.clientY);
+  });
+  window.ipc.on('view-contextmenu', (data) => {
+    const hasLink = !!(data.linkURL);
+    const hasText = !!(data.selectionText && data.selectionText.trim());
+
+    ['ctx-openlink','ctx-copylink'].forEach(id => document.getElementById(id).style.display = hasLink ? '' : 'none');
+    ['ctx-search','ctx-copytext'].forEach(id => document.getElementById(id).style.display = hasText ? '' : 'none');
+
+    // Update label based on context
+    document.querySelector('#ctx-newtab .ctx-label').textContent = hasLink ? '＋ Open link in new tab' : '＋ Open page in new tab';
+
+    ctxMenu._linkURL = data.linkURL;
+    ctxMenu._selectionText = data.selectionText;
+
+    window.ipc.send('view-hide');
+    ctxMenu._viewHidden = true;
+
+    showCtx(data.x, data.y);
+  });
+
+  document.getElementById('ctx-openlink').onclick = () => { hideCtx(); if (ctxMenu._linkURL) newTab(ctxMenu._linkURL); };
+  document.getElementById('ctx-copylink').onclick = () => { hideCtx(); if (ctxMenu._linkURL) navigator.clipboard.writeText(ctxMenu._linkURL).then(() => showToast('Link copied', 'success')); };
+  document.getElementById('ctx-search').onclick = () => { hideCtx(); if (ctxMenu._selectionText) navigate('https://www.google.com/search?q=' + encodeURIComponent(ctxMenu._selectionText)); };
+  document.getElementById('ctx-copytext').onclick = () => { hideCtx(); if (ctxMenu._selectionText) navigator.clipboard.writeText(ctxMenu._selectionText).then(() => showToast('Copied', 'success')); };
+  document.getElementById('ctx-back').onclick = () => { hideCtx(); if (!document.getElementById('ctx-back').classList.contains('disabled')) window.ipc.send('view-back', { tabId: activeId }); };
+  document.getElementById('ctx-fwd').onclick = () => { hideCtx(); if (!document.getElementById('ctx-fwd').classList.contains('disabled')) window.ipc.send('view-fwd', { tabId: activeId }); };
+  document.getElementById('ctx-reload').onclick = () => { hideCtx(); if (!document.getElementById('ctx-reload').classList.contains('disabled')) window.ipc.send('view-reload', { tabId: activeId }); };
+  document.getElementById('ctx-saveas').onclick = () => { hideCtx(); window.ipc.send('ctx-action', { action: 'saveas', tabId: activeId }); };
+  document.getElementById('ctx-print').onclick = () => { hideCtx(); window.ipc.send('ctx-action', { action: 'print', tabId: activeId }); };
+  document.getElementById('ctx-newtab').onclick = () => {
+    hideCtx();
+    const url = ctxMenu._linkURL || (getTab(activeId) && getTab(activeId).url);
+    if (url) newTab(url);
+  };
+  document.getElementById('ctx-copyurl').onclick = () => { hideCtx(); const t = getTab(activeId); if (t?.url) navigator.clipboard.writeText(t.url).then(() => showToast('URL copied', 'success')); };
+  document.getElementById('ctx-viewsrc').onclick = () => { hideCtx(); const t = getTab(activeId); if (t?.url) newTab('view-source:' + t.url); };
+  document.getElementById('ctx-inspect').onclick = () => { hideCtx(); window.ipc.send('open-devtools', { tabId: activeId }); };
+
+  // ── 3-DOT MENU
+  const dotMenu = document.getElementById('dotmenu');
+  let zoomLevel = 1.0;
+
+  function showDotMenu() {
+    const isOpen = dotMenu.classList.contains('show');
+    if (isOpen) {
+      hideDotMenu();
+      return;
+    }
+    // Hide BrowserView so menu renders on top
+    const tab = getTab(activeId);
+    if (tab && tab.url && !tab.url.startsWith('ridell://')) {
+      window.ipc.send('view-hide');
+      dotMenu._viewHidden = true;
+    }
+    dotMenu.classList.add('show');
+  }
+  function hideDotMenu() {
+    dotMenu.classList.remove('show');
+    if (dotMenu._viewHidden) {
+      dotMenu._viewHidden = false;
+      window.ipc.send('view-show', { tabId: activeId });
+    }
+  }
+
+  document.getElementById('btn-dotmenu').onclick = (e) => { e.stopPropagation(); showDotMenu(); };
+  document.addEventListener('mousedown', e => {
+    if (dotMenu.classList.contains('show') && !dotMenu.contains(e.target) && e.target.id !== 'btn-dotmenu') hideDotMenu();
+  });
+
+  // Zoom
+  function applyZoom(delta) {
+    zoomLevel = Math.min(3, Math.max(0.25, zoomLevel + delta));
+    document.getElementById('dm-zoom-val').textContent = Math.round(zoomLevel * 100) + '%';
+    window.ipc.send('view-zoom', { tabId: activeId, factor: zoomLevel });
+  }
+  document.getElementById('dm-zoom-in').onclick = (e) => { e.stopPropagation(); applyZoom(0.1); };
+  document.getElementById('dm-zoom-out').onclick = (e) => { e.stopPropagation(); applyZoom(-0.1); };
+  document.getElementById('dm-zoom-full').onclick = (e) => { e.stopPropagation(); window.ipc.send('win-fullscreen'); };
+
+  // Items
+  document.getElementById('dm-history').onclick = () => { hideDotMenu(); newTab('ridell://history'); };
+  document.getElementById('dm-downloads').onclick = () => { hideDotMenu(); newTab('ridell://downloads'); };
+  document.getElementById('dm-bookmarks').onclick = () => { hideDotMenu(); showToast('Bookmarks bar is always visible below the navbar', 'info'); };
+  document.getElementById('dm-extensions-link').onclick = () => { hideDotMenu(); newTab('ridell://extensions'); };
+  document.getElementById('dm-print').onclick = () => { hideDotMenu(); window.ipc.send('ctx-action', { action: 'print', tabId: activeId }); };
+  document.getElementById('dm-find').onclick = () => { hideDotMenu(); window.ipc.send('view-find', { tabId: activeId }); };
+  document.getElementById('dm-newtab-dm').onclick = () => { hideDotMenu(); newTab(null); };
+  document.getElementById('dm-newwin').onclick = () => { hideDotMenu(); window.ipc.send('new-window'); };
+  document.getElementById('dm-devtools').onclick = () => { hideDotMenu(); window.ipc.send('open-devtools', { tabId: activeId }); };
+  document.getElementById('dm-viewsrc').onclick = () => { hideDotMenu(); const t = getTab(activeId); if (t?.url) newTab('view-source:' + t.url); };
+  document.getElementById('dm-settings').onclick = () => { hideDotMenu(); newTab('ridell://settings'); };
+  document.getElementById('dm-exit').onclick = () => window.ipc.send('win-close');
+
+  // Also add settings to 3-dot menu dynamically — wire existing dm-exit area
+  // Navbar buttons now navigate to ridell pages
+  document.getElementById('btn-history').onclick = () => newTab('ridell://history');
+  document.getElementById('btn-downloads').onclick = () => newTab('ridell://downloads');
+  document.getElementById('btn-extensions').onclick = () => newTab('ridell://extensions');
+
+  // ── RIDELL PAGE RENDERS
+
+  // ridell://downloads — render the downloads panel content in the ridell page
+  function renderRidelDownloads() {
+    const body = document.getElementById('rp-dl-body');
+    if (!body) return;
+    const keys = Object.keys(downloads);
+    if (!keys.length) { body.innerHTML = '<div style="color:var(--muted);font-size:13px;margin-top:24px;">No downloads yet.</div>'; return; }
+    body.innerHTML = keys.reverse().map(id => {
+      const d = downloads[id];
+      const pct = d.total ? Math.round(d.received / d.total * 100) : 0;
+      const isDone = d.state === 'completed'; const isErr = d.state === 'interrupted';
+      return '<div class="dl-item">' +
+        '<div class="dl-icon">' + fileIcon(d.filename) + '</div>' +
+        '<div class="dl-info"><div class="dl-name">' + d.filename + '</div>' +
+        (isDone ? '<div class="dl-meta">' + fmtBytes(d.total) + ' — Done</div>' :
+         isErr ? '<div class="dl-meta" style="color:var(--red)">Failed</div>' :
+         '<div class="dl-progress-wrap"><div class="dl-progress-bar" style="width:' + pct + '%"></div></div>' +
+         '<div class="dl-meta">' + fmtBytes(d.received) + ' / ' + fmtBytes(d.total) + '</div>') +
+        '</div>' +
+        (isDone ? '<button class="dl-btn open-btn" data-id="' + id + '">Open</button><button class="dl-btn" data-show="' + id + '">Show</button>' : '') +
+        '</div>';
+    }).join('');
+    body.querySelectorAll('[data-id]').forEach(btn => btn.onclick = () => window.ipc.send('open-file', { path: downloads[btn.dataset.id].savePath }));
+    body.querySelectorAll('[data-show]').forEach(btn => btn.onclick = () => window.ipc.send('show-file', { path: downloads[btn.dataset.show].savePath }));
+  }
+
+  // ridell://history — render history in the ridell page
+  function renderRidelHistory() {
+    const body = document.getElementById('rp-hist-body');
+    if (!body) return;
+    if (!hist.length) { body.innerHTML = '<div style="color:var(--muted);font-size:13px;margin-top:24px;">No history yet.</div>'; return; }
+    body.innerHTML = hist.slice().reverse().map((h, i) =>
+      '<div class="hist-item" data-i="' + (hist.length - 1 - i) + '" style="cursor:pointer;display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">' +
+      '<img class="hist-fav" src="' + (favUrl(h.url) || '') + '" onerror="this.style.display=\'none\'">' +
+      '<div style="flex:1;min-width:0;"><div style="font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (h.title || h.url) + '</div>' +
+      '<div style="font-size:11px;color:var(--muted);font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + h.url + '</div></div>' +
+      '<div style="font-size:11px;color:var(--muted);flex-shrink:0;">' + new Date(h.ts).toLocaleString() + '</div></div>'
+    ).join('');
+    body.querySelectorAll('.hist-item').forEach(el => el.onclick = () => navigate(hist[+el.dataset.i].url));
+  }
+  document.getElementById('rp-hist-clear').onclick = () => { hist = []; localStorage.removeItem('pb_hist'); renderRidelHistory(); showToast('History cleared', 'success'); };
+
+  // ridell://extensions — mount existing extensions page content
+  function renderRidelExtensions() {
+    // Move the #extensions-page inner content into rp-ext-body
+    const extPage = document.getElementById('extensions-page');
+    const body = document.getElementById('rp-ext-body');
+    if (!body || !extPage) return;
+    body.innerHTML = '';
+    // Clone the tabs and grid into rp-ext-body
+    const tabsEl = extPage.querySelector('#ext-tabs');
+    const gridEl = extPage.querySelector('#ext-body');
+    if (tabsEl) body.appendChild(tabsEl.cloneNode(true));
+    if (gridEl) body.appendChild(gridEl.cloneNode(true));
+    loadInstalledList().then(() => renderExtensions());
+  }
+
+  // ridell://settings
+  const pbSettings = JSON.parse(localStorage.getItem('pb_settings') || '{}');
+  function saveSettings() { localStorage.setItem('pb_settings', JSON.stringify(pbSettings)); }
+
+  function renderSettings() {
+    // Apply saved values to controls
+    const st = pbSettings;
+    document.getElementById('st-bookmarks').checked = st.showBookmarks !== false;
+    document.getElementById('st-compact-tabs').checked = !!st.compactTabs;
+    document.getElementById('st-save-hist').checked = st.saveHist !== false;
+    document.getElementById('st-clear-hist-exit').checked = !!st.clearHistExit;
+    document.getElementById('st-spoof-chrome').checked = st.spoofChrome !== false;
+    if (st.searchEngine) document.getElementById('st-search-engine').value = st.searchEngine;
+    applySettings();
+  }
+
+  function applySettings() {
+    const st = pbSettings;
+    // Bookmarks bar
+    document.getElementById('bookmarks').style.display = (st.showBookmarks !== false) ? '' : 'none';
+    // Compact tabs
+    document.querySelectorAll('.tab').forEach(t => t.style.height = st.compactTabs ? '22px' : '');
+  }
+
+  // Settings event listeners
+  document.getElementById('st-bookmarks').onchange = e => { pbSettings.showBookmarks = e.target.checked; saveSettings(); applySettings(); };
+  document.getElementById('st-compact-tabs').onchange = e => { pbSettings.compactTabs = e.target.checked; saveSettings(); applySettings(); };
+  document.getElementById('st-save-hist').onchange = e => { pbSettings.saveHist = e.target.checked; saveSettings(); };
+  document.getElementById('st-clear-hist-exit').onchange = e => { pbSettings.clearHistExit = e.target.checked; saveSettings(); };
+  document.getElementById('st-spoof-chrome').onchange = e => { pbSettings.spoofChrome = e.target.checked; saveSettings(); window.ipc.send('setting-change', { key: 'spoofChrome', value: e.target.checked }); };
+  document.getElementById('st-search-engine').onchange = e => {
+    pbSettings.searchEngine = e.target.value;
+    saveSettings();
+    const engines = { ridell:'https://ridell-page-search.lovable.app/search?q=', google:'https://www.google.com/search?q=', bing:'https://www.bing.com/search?q=', duckduckgo:'https://duckduckgo.com/?q=', brave:'https://search.brave.com/search?q=' };
+    window._searchBase = engines[e.target.value] || engines.google;
+  };
+  document.getElementById('st-clear-all').onclick = () => {
+    hist = []; localStorage.removeItem('pb_hist');
+    Object.keys(downloads).forEach(k => delete downloads[k]);
+    updateDlBadge();
+    showToast('All browsing data cleared', 'success');
+  };
+
+  // Apply settings on load
+  renderSettings();
+
+  // Override openRidellPage to call correct render
+  const _origOpen = openRidellPage;
+  window.openRidellPage = openRidellPage;
+  function openRidellPage(page) {
+    closeAllRidellPages();
+    const el = document.getElementById('ridell-' + page);
+    if (!el) return;
+    el.classList.add('open');
+    if (page === 'downloads') renderRidelDownloads();
+    if (page === 'history') renderRidelHistory();
+    if (page === 'extensions') { loadInstalledList().then(() => renderExtensions()); }
+    if (page === 'settings') renderSettings();
+  }
+
+  newTab(null);
+
+  // ══════════════════════════════════════════════════
+  // DEFAULT BROWSER POPUP
+  // ══════════════════════════════════════════════════
+  // Register IPC listener immediately (before DOM — that's fine, callback only fires later)
+  const DISMISSED_KEY = 'pb_default_dismissed';
+  window.ipc.on('check-default-browser', function(data) {
+    // DOM is guaranteed ready by the time main process sends this (2s delay)
+    if (!data.isDefault) _dbpShow();
+  });
+
+  function _dbpShow() {
+    if (localStorage.getItem(DISMISSED_KEY)) return;
+    const popup = document.getElementById('default-browser-popup');
+    if (popup) popup.classList.add('show');
+  }
+  function _dbpHide() {
+    const popup = document.getElementById('default-browser-popup');
+    if (popup) popup.classList.remove('show');
+  }
+
+
+  // Win controls
+  document.getElementById('btn-min').onclick = () => window.ipc.send('win-min');
+  document.getElementById('btn-max').onclick = () => window.ipc.send('win-max');
+  document.getElementById('btn-close').onclick = () => window.ipc.send('win-close');
+  // Nav + toolbar buttons
+  document.getElementById('btn-go').onclick = () => { document.getElementById('suggestions').classList.remove('open'); navigate(document.getElementById('urlbar').value); };
+  document.getElementById('hp-search').addEventListener('keydown', e => { if (e.key === 'Enter') navigate(e.target.value); });
+  document.getElementById('hp-go-btn').onclick = () => navigate(document.getElementById('hp-search').value);
+  document.querySelectorAll('.sc').forEach(el => el.addEventListener('click', () => navigate(el.dataset.url)));
+  document.querySelectorAll('.bm').forEach(el => el.addEventListener('click', () => navigate(el.dataset.url)));
+  document.getElementById('btn-back').onclick = () => window.ipc.send('view-back', { tabId: activeId });
+  document.getElementById('btn-fwd').onclick = () => window.ipc.send('view-fwd', { tabId: activeId });
+  document.getElementById('btn-reload').onclick = () => window.ipc.send('view-reload', { tabId: activeId });
+  document.getElementById('btn-home').onclick = () => { const tab = getTab(activeId); if (tab) { tab.url = null; tab.title = 'New Tab'; } showActiveTab(); renderTabs(); };
+  document.getElementById('btn-newtab').onclick = () => newTab(null);
+  document.getElementById('btn-devtools').onclick = () => window.ipc.send('open-devtools', { tabId: activeId });
+
+  // Reuse the already-loaded titlebar logo for the welcome screen
+  const mainLogo = document.getElementById('logo');
+  const wcLogo   = document.getElementById('wc-logo');
+  if (mainLogo && wcLogo) wcLogo.src = mainLogo.src;
+  const dbpClose = document.getElementById('dbp-close');
+  const dbpNo    = document.getElementById('dbp-no');
+  const dbpYes   = document.getElementById('dbp-yes');
+  if (!dbpClose || !dbpNo || !dbpYes) return;
+
+  dbpClose.onclick = () => { _dbpHide(); localStorage.setItem(DISMISSED_KEY, '1'); };
+  dbpNo.onclick    = () => { _dbpHide(); localStorage.setItem(DISMISSED_KEY, '1'); };
+
+  dbpYes.onclick = async () => {
+    dbpYes.textContent = 'Setting…';
+    dbpYes.disabled = true;
+    try {
+      const res = await window.ipc.invoke('set-default-browser');
+      if (res.ok) {
+        dbpYes.textContent = '✅ Done! Check Windows Settings';
+        dbpYes.style.background = '#3dd68c';
+        const desc = document.querySelector('.dbp-desc');
+        if (desc) desc.textContent = 'Windows Settings just opened — select PoleBrowse to confirm.';
+        localStorage.setItem(DISMISSED_KEY, '1');
+        setTimeout(_dbpHide, 3500);
+      } else {
+        dbpYes.textContent = 'Open Windows Settings';
+        dbpYes.disabled = false;
+        dbpYes.onclick = () => window.ipc.invoke('set-default-browser');
+      }
+    } catch(e) {
+      dbpYes.textContent = 'Failed — try manually';
+      dbpYes.disabled = false;
+    }
+  };
+
+  // Settings "Set as default" button
+  const stBtn = document.getElementById('st-set-default');
+  if (stBtn) {
+    window.ipc.invoke('default-browser-status').then(res => {
+      if (!res || !res.isWindows) { stBtn.style.display = 'none'; return; }
+      if (res.isDefault) {
+        stBtn.textContent = '✅ Already default';
+        stBtn.disabled = true;
+        stBtn.style.opacity = '.6';
+      }
+    }).catch(() => { stBtn.style.display = 'none'; });
+
+    stBtn.onclick = async () => {
+      stBtn.textContent = 'Setting…';
+      stBtn.disabled = true;
+      try {
+        const res = await window.ipc.invoke('set-default-browser');
+        stBtn.textContent = res.isDefault ? '✅ Set as default' : 'Confirm in Windows Settings →';
+        stBtn.disabled = false;
+      } catch(e) {
+        stBtn.textContent = 'Failed';
+        stBtn.disabled = false;
+      }
+    };
+  }
+});
+
+
+// ══════════════════════════════════════════════════
+(function() {
+  if (localStorage.getItem('pb_welcomed')) return;
+
+  const ENGINES_MAP = {
+    ridell: 'https://ridell-page-search.lovable.app/search?q=',
+    google: 'https://www.google.com/search?q=',
+    bing: 'https://www.bing.com/search?q=',
+    duckduckgo: 'https://duckduckgo.com/?q=',
+    brave: 'https://search.brave.com/search?q='
+  };
+
+  let wStep = 0;
+  const overlay = document.getElementById('welcome-overlay');
+  const steps = overlay.querySelectorAll('.wc-step');
+  const dots = overlay.querySelectorAll('.wc-dot');
+
+  function goStep(n) {
+    steps.forEach((s, i) => s.classList.toggle('wc-active', i === n));
+    dots.forEach((d, i) => d.classList.toggle('wc-dot-active', i === n));
+    wStep = n;
+  }
+
+  overlay.style.display = 'flex';
+  goStep(0);
+
+  // Step 1 — name input
+  document.getElementById('wc-name-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('wc-next-1').click();
+  });
+  document.getElementById('wc-next-1').onclick = () => {
+    const name = document.getElementById('wc-name-input').value.trim();
+    if (name) pbSettings.userName = name;
+    saveSettings();
+    goStep(1);
+  };
+  document.getElementById('wc-skip-1').onclick = () => goStep(1);
+
+  // Step 2 — search engine pick
+  document.querySelectorAll('.wc-engine-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.wc-engine-btn').forEach(b => b.classList.remove('wc-engine-active'));
+      btn.classList.add('wc-engine-active');
+    };
+  });
+  document.getElementById('wc-next-2').onclick = () => {
+    const active = document.querySelector('.wc-engine-btn.wc-engine-active');
+    if (active) {
+      const eng = active.dataset.engine;
+      pbSettings.searchEngine = eng;
+      window._searchBase = ENGINES_MAP[eng];
+      saveSettings();
+      document.getElementById('st-search-engine').value = eng;
+    }
+    goStep(2);
+  };
+  document.getElementById('wc-skip-2').onclick = () => goStep(2);
+
+  // Step 3 — import (reuses import modal)
+  document.getElementById('wc-import-btn').onclick = () => openImportModal(true);
+  document.getElementById('wc-skip-3').onclick = () => finishWelcome();
+  document.getElementById('wc-done-btn').onclick = () => finishWelcome();
+
+  function finishWelcome() {
+    localStorage.setItem('pb_welcomed', '1');
+    overlay.style.display = 'none';
+  }
+
+  window._finishWelcomeAfterImport = function() {
+    overlay.style.display = 'none';
+    goStep(3);
+    overlay.style.display = 'flex';
+    // skip straight to done step
+    goStep(3);
+  };
+})();
+
+// ══════════════════════════════════════════════════
+// IMPORT MODAL
+// ══════════════════════════════════════════════════
+let _importFromWelcome = false;
+
+function openImportModal(fromWelcome = false) {
+  _importFromWelcome = fromWelcome;
+  const modal = document.getElementById('import-modal');
+  modal.style.display = 'flex';
+  document.getElementById('import-browsers-list').innerHTML = '<div class="import-loading">🔍 Scanning for browsers…</div>';
+  document.getElementById('import-result').style.display = 'none';
+
+  window.ipc.invoke('import-list-browsers').then(browsers => {
+    const list = document.getElementById('import-browsers-list');
+    if (!browsers.length) {
+      list.innerHTML = '<div class="import-empty">No browsers found on this system.<br>Use "Choose folder" to select a profile manually.</div>';
+      return;
+    }
+    list.innerHTML = browsers.map((b, i) =>
+      `<div class="import-browser-row" data-i="${i}" data-id="${b.id}" data-path="${b.profilePath}">
+        <span class="ib-icon">${b.icon}</span>
+        <div class="ib-info">
+          <div class="ib-name">${b.name}</div>
+          <div class="ib-path">${b.profilePath}</div>
+        </div>
+        <div class="ib-check">○</div>
+      </div>`
+    ).join('');
+    list.querySelectorAll('.import-browser-row').forEach(row => {
+      row.onclick = () => {
+        list.querySelectorAll('.import-browser-row').forEach(r => { r.classList.remove('selected'); r.querySelector('.ib-check').textContent = '○'; });
+        row.classList.add('selected');
+        row.querySelector('.ib-check').textContent = '●';
+        window._selectedBrowser = { id: row.dataset.id, path: row.dataset.path };
+      };
+    });
+  }).catch(() => {
+    document.getElementById('import-browsers-list').innerHTML = '<div class="import-empty">Could not scan for browsers.</div>';
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+document.getElementById('import-close').onclick = () => {
+  document.getElementById('import-modal').style.display = 'none';
+};
+document.getElementById('import-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('import-modal')) document.getElementById('import-modal').style.display = 'none';
+});
+
+document.getElementById('import-pick-folder').onclick = async () => {
+  const folder = await window.ipc.invoke('import-pick-folder');
+  if (!folder) return;
+  // Auto-detect browser type from path
+  let id = 'chrome';
+  if (folder.toLowerCase().includes('firefox') || folder.toLowerCase().includes('mozilla')) id = 'firefox';
+  else if (folder.toLowerCase().includes('edge')) id = 'edge';
+  else if (folder.toLowerCase().includes('brave')) id = 'brave';
+  window._selectedBrowser = { id, path: folder };
+  const list = document.getElementById('import-browsers-list');
+  list.innerHTML = `<div class="import-browser-row selected" style="pointer-events:none">
+    <span class="ib-icon">📁</span>
+    <div class="ib-info"><div class="ib-name">Custom folder</div><div class="ib-path">${folder}</div></div>
+    <div class="ib-check">●</div>
+  </div>`;
+};
+
+document.getElementById('import-do-btn').onclick = async () => {
+  const sel = window._selectedBrowser;
+  if (!sel) { showToast('Select a browser first', 'error'); return; }
+  const whatBkm = document.getElementById('import-chk-bkm').checked;
+  const whatHist = document.getElementById('import-chk-hist').checked;
+  if (!whatBkm && !whatHist) { showToast('Select at least one thing to import', 'error'); return; }
+
+  document.getElementById('import-do-btn').textContent = 'Importing…';
+  document.getElementById('import-do-btn').disabled = true;
+
+  try {
+    const data = await window.ipc.invoke('import-browser-data', {
+      browserId: sel.id,
+      profilePath: sel.path,
+      what: { bookmarks: whatBkm, history: whatHist }
+    });
+
+    let msg = [];
+    if (data.bookmarks.length) {
+      // Merge into pb_bookmarks
+      const existing = JSON.parse(localStorage.getItem('pb_bookmarks') || '[]');
+      const merged = [...existing];
+      data.bookmarks.forEach(b => { if (!merged.find(e => e.url === b.url)) merged.push(b); });
+      localStorage.setItem('pb_bookmarks', JSON.stringify(merged));
+      msg.push(`${data.bookmarks.length} bookmarks`);
+    }
+    if (data.history.length) {
+      const existing = JSON.parse(localStorage.getItem('pb_hist') || '[]');
+      const merged = [...data.history, ...existing].slice(0, 500);
+      localStorage.setItem('pb_hist', JSON.stringify(merged));
+      hist = merged;
+      msg.push(`${data.history.length} history entries`);
+    }
+
+    const resEl = document.getElementById('import-result');
+    resEl.style.display = 'block';
+    resEl.className = 'import-result import-result-ok';
+    resEl.innerHTML = `✅ Imported: ${msg.join(', ') || 'nothing'}` +
+      (data.warnings.length ? `<br><span style="color:var(--warn)">${data.warnings.join(' ')}</span>` : '');
+
+    if (_importFromWelcome) {
+      setTimeout(() => {
+        document.getElementById('import-modal').style.display = 'none';
+        localStorage.setItem('pb_welcomed', '1');
+        document.getElementById('welcome-overlay').style.display = 'none';
+      }, 1800);
+    }
+  } catch(e) {
+    const resEl = document.getElementById('import-result');
+    resEl.style.display = 'block';
+    resEl.className = 'import-result import-result-err';
+    resEl.textContent = '❌ Import failed: ' + (e.message || e);
+  } finally {
+    document.getElementById('import-do-btn').textContent = 'Import';
+    document.getElementById('import-do-btn').disabled = false;
+  }
+};
+
+// Settings button
+document.getElementById('st-open-import').onclick = () => openImportModal(false);
+}); // end DOMContentLoaded (import bindings)
+
+</script>
+
+
+<!-- ════ DEFAULT BROWSER POPUP ════ -->
+<div id="default-browser-popup">
+  <div class="dbp-top">
+    <div class="dbp-icon">🌐</div>
+    <div class="dbp-text">
+      <div class="dbp-title">Set PoleBrowse as default?</div>
+      <div class="dbp-desc">Links from apps and emails will open here instead of your current browser.</div>
+    </div>
+    <button class="dbp-close" id="dbp-close" type="button">✕</button>
+  </div>
+  <div class="dbp-actions">
+    <button class="dbp-btn-yes" id="dbp-yes" type="button">Yes, set as default</button>
+    <button class="dbp-btn-no" id="dbp-no" type="button">Not now</button>
+  </div>
+  <div class="dbp-note">You can always change this later in Settings</div>
+</div>
+
+<!-- ════ WELCOME OVERLAY ════ -->
+<div id="welcome-overlay" style="display:none">
+  <!-- Step 0: Greeting -->
+  <div class="wc-step" id="wc-s0">
+    <div class="wc-logo">
+      <img id="wc-logo" alt="" style="width:64px;height:64px;border-radius:16px;">
+      <div class="wc-logo-fallback">PB</div>
+    </div>
+    <h1 class="wc-heading">Welcome to <span>PoleBrowse</span></h1>
+    <p class="wc-sub">Your private, fast, fully-featured browser.<br>Let's get you set up.</p>
+    <div class="wc-name-wrap">
+      <label class="wc-label">What should we call you?</label>
+      <input id="wc-name-input" class="wc-input" type="text" placeholder="Your name (optional)" autocomplete="off">
+    </div>
+    <button class="wc-btn-primary" id="wc-next-1">Get started →</button>
+    <button class="wc-btn-ghost" id="wc-skip-1">Skip</button>
+  </div>
+
+  <!-- Step 1: Search engine -->
+  <div class="wc-step" id="wc-s1">
+    <div class="wc-step-icon">🔍</div>
+    <h2 class="wc-heading">Pick your search engine</h2>
+    <p class="wc-sub">Used when you type in the address bar.</p>
+    <div class="wc-engine-grid">
+      <button class="wc-engine-btn wc-engine-active" data-engine="ridell">
+        <span class="we-icon">🔎</span><span class="we-name">RidelL Search</span><span class="we-badge">Default</span>
+      </button>
+      <button class="wc-engine-btn" data-engine="google">
+        <span class="we-icon">🌐</span><span class="we-name">Google</span>
+      </button>
+      <button class="wc-engine-btn" data-engine="duckduckgo">
+        <span class="we-icon">🦆</span><span class="we-name">DuckDuckGo</span>
+      </button>
+      <button class="wc-engine-btn" data-engine="bing">
+        <span class="we-icon">🅱</span><span class="we-name">Bing</span>
+      </button>
+      <button class="wc-engine-btn" data-engine="brave">
+        <span class="we-icon">🦁</span><span class="we-name">Brave</span>
+      </button>
+    </div>
+    <button class="wc-btn-primary" id="wc-next-2">Continue →</button>
+    <button class="wc-btn-ghost" id="wc-skip-2">Skip</button>
+  </div>
+
+  <!-- Step 2: Import -->
+  <div class="wc-step" id="wc-s2">
+    <div class="wc-step-icon">📦</div>
+    <h2 class="wc-heading">Import from another browser</h2>
+    <p class="wc-sub">Bring your bookmarks and history over.</p>
+    <button class="wc-btn-primary" id="wc-import-btn">Import now →</button>
+    <button class="wc-btn-ghost" id="wc-skip-3">Skip, start fresh</button>
+  </div>
+
+  <!-- Step 3: Done -->
+  <div class="wc-step" id="wc-s3">
+    <div class="wc-step-icon">🎉</div>
+    <h2 class="wc-heading">You're all set!</h2>
+    <p class="wc-sub">PoleBrowse is ready. Start browsing.</p>
+    <button class="wc-btn-primary" id="wc-done-btn">Start browsing →</button>
+  </div>
+
+  <!-- Dots -->
+  <div class="wc-dots">
+    <div class="wc-dot wc-dot-active"></div>
+    <div class="wc-dot"></div>
+    <div class="wc-dot"></div>
+    <div class="wc-dot"></div>
+  </div>
+</div>
+
+<!-- ════ IMPORT MODAL ════ -->
+<div id="import-modal" style="display:none">
+  <div class="import-box">
+    <div class="import-header">
+      <div class="import-title">📦 Import from browser</div>
+      <button id="import-close" class="import-close-btn" type="button">✕</button>
+    </div>
+    <div class="import-body">
+      <div class="import-what">
+        <label class="import-chk-row"><input type="checkbox" id="import-chk-bkm" checked> Bookmarks</label>
+        <label class="import-chk-row"><input type="checkbox" id="import-chk-hist"> History <span class="import-note">(requires better-sqlite3)</span></label>
+      </div>
+      <div id="import-browsers-list"></div>
+      <button class="import-folder-btn" id="import-pick-folder" type="button">📁 Choose profile folder manually</button>
+      <div id="import-result" style="display:none"></div>
+    </div>
+    <div class="import-footer">
+      <button class="import-do-btn" id="import-do-btn" type="button">Import</button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* ── Default browser popup ── */
+#default-browser-popup {
+  position: fixed;
+  bottom: 28px; right: 28px;
+  z-index: 900;
+  width: 340px;
+  background: #14141e;
+  border: 1px solid #2a2a3d;
+  border-radius: 18px;
+  box-shadow: 0 16px 48px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.04);
+  padding: 20px 20px 16px;
+  display: none;
+  flex-direction: column;
+  gap: 14px;
+  animation: popSlide .28s cubic-bezier(.34,1.56,.64,1);
+}
+#default-browser-popup.show { display: flex; }
+@keyframes popSlide {
+  from { opacity: 0; transform: translateY(20px) scale(.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.dbp-top { display: flex; align-items: flex-start; gap: 14px; }
+.dbp-icon {
+  width: 44px; height: 44px; flex-shrink: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #4d87ff22, #a78bfa22);
+  border: 1px solid #3a3a5a;
+  display: grid; place-items: center;
+  font-size: 22px;
+}
+.dbp-text { flex: 1; }
+.dbp-title { font-size: 14px; font-weight: 700; color: #eef; margin-bottom: 5px; }
+.dbp-desc { font-size: 12px; color: #6060a0; line-height: 1.55; }
+.dbp-close {
+  width: 26px; height: 26px; flex-shrink: 0;
+  border-radius: 8px; background: #1e1e2e;
+  color: #505070; font-size: 13px;
+  display: grid; place-items: center;
+  margin-top: -4px;
+}
+.dbp-close:hover { background: #f05c5c22; color: #f05c5c; }
+.dbp-actions { display: flex; gap: 8px; }
+.dbp-btn-yes {
+  flex: 1; height: 38px; border-radius: 11px;
+  background: #4d87ff; color: #fff;
+  font-size: 13px; font-weight: 600;
+  box-shadow: 0 2px 12px rgba(77,135,255,.35);
+  transition: all .14s;
+}
+.dbp-btn-yes:hover { background: #5b93ff; }
+.dbp-btn-yes:active { transform: scale(.97); }
+.dbp-btn-no {
+  height: 38px; padding: 0 16px; border-radius: 11px;
+  background: #1a1a28; border: 1px solid #2a2a3d;
+  color: #6060a0; font-size: 13px;
+}
+.dbp-btn-no:hover { color: #aaa; border-color: #3a3a5a; }
+.dbp-note { font-size: 10px; color: #404060; text-align: center; }
+
+/* ── EXTERNAL PROTOCOL POPUP ── */
+#proto-popup-overlay {
+  position:fixed;inset:0;z-index:10000;
+  background:rgba(0,0,0,.6);
+  backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;
+}
+#proto-popup-overlay.open { display:flex; }
+#proto-popup {
+  background:#141420;
+  border:1px solid #2a2a44;
+  border-radius:18px;
+  padding:26px 28px 22px;
+  width:380px;max-width:92vw;
+  box-shadow:0 24px 64px rgba(0,0,0,.7);
+  display:flex;flex-direction:column;gap:18px;
+  animation:popSlide .22s cubic-bezier(.34,1.56,.64,1);
+}
+.pp-head { display:flex;align-items:flex-start;gap:14px; }
+.pp-icon {
+  width:48px;height:48px;flex-shrink:0;
+  border-radius:14px;
+  background:linear-gradient(135deg,#ff8c4222,#ff4d6d22);
+  border:1px solid #3a2a3a;
+  display:grid;place-items:center;font-size:24px;
+}
+.pp-info { flex:1; }
+.pp-title { font-size:14px;font-weight:700;color:#eef;margin-bottom:6px; }
+.pp-scheme {
+  font-size:12px;font-family:var(--mono);
+  color:#7878b0;word-break:break-all;
+  background:#0e0e1a;border:1px solid #2a2a3a;
+  border-radius:8px;padding:6px 10px;line-height:1.5;
+}
+.pp-warn { font-size:11.5px;color:#9090b8;line-height:1.6; }
+.pp-actions { display:flex;gap:10px; }
+.pp-yes {
+  flex:1;height:40px;border-radius:11px;
+  background:#ff6b35;color:#fff;
+  font-size:13px;font-weight:600;
+  box-shadow:0 2px 14px rgba(255,107,53,.3);
+  transition:all .13s;border:none;cursor:pointer;
+}
+.pp-yes:hover { background:#ff7d4d; }
+.pp-yes:active { transform:scale(.97); }
+.pp-no {
+  height:40px;padding:0 20px;border-radius:11px;
+  background:#1a1a28;border:1px solid #2a2a3d;
+  color:#7070a0;font-size:13px;cursor:pointer;
+  transition:all .13s;
+}
+.pp-no:hover { color:#bbb;border-color:#3a3a5a; }
+
+#welcome-overlay {
+  position: fixed; inset: 0; z-index: 999;
+  background: rgba(8,8,14,.97);
+  backdrop-filter: blur(8px);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 0; padding: 24px;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+.wc-step { display: none; flex-direction: column; align-items: center; gap: 16px; width: 100%; max-width: 420px; text-align: center; }
+.wc-step.wc-active { display: flex; animation: wcIn .3s ease; }
+@keyframes wcIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+.wc-logo { position: relative; margin-bottom: 8px; }
+.wc-logo img { width: 72px; height: 72px; border-radius: 22px; box-shadow: 0 8px 32px rgba(91,138,245,.4); }
+.wc-logo-fallback {
+  width: 72px; height: 72px; border-radius: 22px;
+  background: linear-gradient(135deg, #4d87ff, #a78bfa);
+  display: grid; place-items: center;
+  font-size: 26px; font-weight: 800; color: #fff;
+  box-shadow: 0 8px 32px rgba(91,138,245,.4);
+}
+.wc-step-icon { font-size: 56px; line-height: 1; }
+.wc-heading { font-size: 26px; font-weight: 700; color: #eef; letter-spacing: -.5px; }
+.wc-heading span { color: #5b8af5; }
+.wc-sub { font-size: 14px; color: #7070a0; line-height: 1.6; }
+.wc-label { font-size: 12px; color: #7070a0; align-self: flex-start; }
+.wc-name-wrap { display: flex; flex-direction: column; gap: 7px; width: 100%; }
+.wc-input {
+  width: 100%; height: 44px; padding: 0 16px;
+  border-radius: 12px; border: 1.5px solid #2a2a3d;
+  background: #161622; color: #eef; font-size: 14px;
+  caret-color: #5b8af5;
+}
+.wc-input:focus { outline: none; border-color: #5b8af5; box-shadow: 0 0 0 3px rgba(91,138,245,.2); }
+.wc-btn-primary {
+  width: 100%; height: 46px; border-radius: 13px;
+  background: #4d87ff; color: #fff;
+  font-size: 15px; font-weight: 600;
+  box-shadow: 0 4px 18px rgba(77,135,255,.35);
+  transition: all .15s;
+}
+.wc-btn-primary:hover { background: #5b93ff; }
+.wc-btn-primary:active { transform: scale(.97); }
+.wc-btn-ghost { background: none; color: #505070; font-size: 13px; padding: 8px 0; }
+.wc-btn-ghost:hover { color: #8080a0; }
+.wc-engine-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+.wc-engine-btn {
+  display: flex; align-items: center; gap: 10px;
+  padding: 13px 14px; border-radius: 12px;
+  border: 1.5px solid #2a2a3d; background: #14141e;
+  color: #9090b0; font-size: 13px; text-align: left;
+  transition: all .14s;
+}
+.wc-engine-btn:hover { border-color: #3a3a5a; color: #ccc; }
+.wc-engine-btn.wc-engine-active { border-color: #4d87ff; background: rgba(77,135,255,.12); color: #eef; }
+.we-icon { font-size: 20px; flex-shrink: 0; }
+.we-name { flex: 1; font-weight: 500; }
+.we-badge { font-size: 9px; padding: 2px 7px; border-radius: 6px; background: #4d87ff; color: #fff; }
+.wc-dots { display: flex; gap: 7px; margin-top: 28px; }
+.wc-dot { width: 8px; height: 8px; border-radius: 50%; background: #2a2a3d; transition: all .2s; }
+.wc-dot.wc-dot-active { background: #4d87ff; width: 22px; border-radius: 4px; }
+
+/* ── Import modal ── */
+#import-modal {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(8,8,14,.85);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.import-box {
+  background: #14141e; border: 1px solid #2a2a3d;
+  border-radius: 18px; width: 100%; max-width: 500px;
+  box-shadow: 0 24px 64px rgba(0,0,0,.6);
+  display: flex; flex-direction: column; overflow: hidden;
+  max-height: 90vh;
+}
+.import-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid #1e1e2e;
+}
+.import-title { font-size: 16px; font-weight: 700; color: #eef; }
+.import-close-btn { width: 30px; height: 30px; border-radius: 8px; background: #1e1e2e; color: #7070a0; font-size: 14px; display: grid; place-items: center; }
+.import-close-btn:hover { background: #f05c5c; color: #fff; }
+.import-body { flex: 1; overflow-y: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; }
+.import-what { display: flex; gap: 20px; }
+.import-chk-row { display: flex; align-items: center; gap: 7px; font-size: 13px; color: #ccc; cursor: pointer; }
+.import-note { font-size: 10px; color: #505070; }
+#import-browsers-list { display: flex; flex-direction: column; gap: 6px; }
+.import-browser-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border-radius: 12px;
+  border: 1.5px solid #1e1e2e; background: #0f0f18;
+  cursor: pointer; transition: all .14s;
+}
+.import-browser-row:hover { border-color: #3a3a5a; }
+.import-browser-row.selected { border-color: #4d87ff; background: rgba(77,135,255,.1); }
+.ib-icon { font-size: 24px; flex-shrink: 0; }
+.ib-info { flex: 1; min-width: 0; }
+.ib-name { font-size: 13px; font-weight: 600; color: #eef; }
+.ib-path { font-size: 10px; color: #505070; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px; }
+.ib-check { font-size: 16px; color: #4d87ff; flex-shrink: 0; }
+.import-loading { text-align: center; color: #505070; font-size: 13px; padding: 20px; }
+.import-empty { text-align: center; color: #505070; font-size: 13px; padding: 20px; line-height: 1.6; }
+.import-folder-btn {
+  align-self: flex-start;
+  padding: 8px 16px; border-radius: 9px;
+  border: 1px solid #2a2a3d; background: #1a1a28;
+  color: #8080a0; font-size: 12px;
+}
+.import-folder-btn:hover { border-color: #4d87ff; color: #eef; }
+.import-result { padding: 12px 14px; border-radius: 10px; font-size: 13px; line-height: 1.6; }
+.import-result-ok { background: rgba(74,222,128,.1); border: 1px solid rgba(74,222,128,.3); color: #4ade80; }
+.import-result-err { background: rgba(240,92,92,.1); border: 1px solid rgba(240,92,92,.3); color: #f05c5c; }
+.import-footer { padding: 14px 20px; border-top: 1px solid #1e1e2e; }
+.import-do-btn {
+  width: 100%; height: 42px; border-radius: 11px;
+  background: #4d87ff; color: #fff;
+  font-size: 14px; font-weight: 600;
+}
+.import-do-btn:hover { background: #5b93ff; }
+.import-do-btn:disabled { opacity: .5; cursor: not-allowed; }
+/* Settings import button */
+.st-action-btn {
+  padding: 8px 16px; border-radius: 10px;
+  border: 1.5px solid #3a3a5a; background: #1a1a28;
+  color: #8080c0; font-size: 13px; cursor: pointer;
+  transition: all .14s;
+}
+.st-action-btn:hover { border-color: #4d87ff; color: #eef; }
+</style>
+
+<!-- EXTERNAL PROTOCOL POPUP -->
+<div id="proto-popup-overlay">
+  <div id="proto-popup">
+    <div class="pp-head">
+      <div class="pp-icon">🔗</div>
+      <div class="pp-info">
+        <div class="pp-title">Open external app?</div>
+        <div class="pp-scheme" id="pp-url"></div>
+      </div>
+    </div>
+    <div class="pp-warn">A website wants to open an external application on your computer. Only allow this if you trust the site.</div>
+    <div class="pp-actions">
+      <button class="pp-yes" id="pp-yes">Open App</button>
+      <button class="pp-no" id="pp-no">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── NO INTERNET PAGE ──────────────────────────────────────────── -->
+<div class="ridell-page" id="ridell-no-internet" style="align-items:center;justify-content:center;">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:20px;max-width:480px;text-align:center;padding:40px 24px;">
+    <div id="nointernet-dino" style="font-size:72px;line-height:1;filter:drop-shadow(0 0 18px rgba(245,166,35,0.3));animation:dino-bob 2.4s ease-in-out infinite;">🦖</div>
+    <div style="font-size:28px;font-weight:700;color:var(--text);letter-spacing:-.5px;">No internet connection</div>
+    <div style="font-size:13px;color:var(--muted);line-height:1.6;">PoleBrowse can't reach the internet right now.<br>Check your Wi-Fi or cable, then try again.</div>
+    <div id="nointernet-url" style="font-size:11px;font-family:var(--mono);color:var(--muted);background:var(--l2);border:1px solid var(--border);border-radius:6px;padding:4px 12px;word-break:break-all;max-width:100%;"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+      <button onclick="window.ipc && window.ipc.send('view-reload')" style="height:36px;padding:0 22px;background:linear-gradient(135deg,#ff7c1e,#f5a623);color:#000;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--ff);letter-spacing:.02em;">⟳ Try again</button>
+      <button onclick="window.ipc && window.ipc.send('view-navigate',{url:'ridell://newtab'})" style="height:36px;padding:0 22px;background:var(--l2);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:var(--ff);">← Go home</button>
+    </div>
+    <div style="font-size:11px;color:var(--muted);opacity:.6;">ERR_INTERNET_DISCONNECTED</div>
+  </div>
+  <style>@keyframes dino-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}</style>
+</div>
+
+<!-- ── DANGEROUS SITE PAGE ───────────────────────────────────────── -->
+<div class="ridell-page" id="ridell-dangerous" style="align-items:center;justify-content:center;">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:0;max-width:560px;width:100%;padding:32px 24px;">
+    <!-- Red warning card -->
+    <div style="width:100%;background:linear-gradient(135deg,#1a0505 0%,#110303 100%);border:1.5px solid rgba(224,92,92,0.4);border-radius:16px;padding:32px 36px;display:flex;flex-direction:column;gap:20px;">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="width:52px;height:52px;border-radius:12px;background:rgba(224,92,92,0.15);border:1.5px solid rgba(224,92,92,0.35);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">⚠️</div>
+        <div>
+          <div style="font-size:22px;font-weight:800;color:#f87171;letter-spacing:-.3px;">Deceptive site ahead</div>
+          <div style="font-size:12px;color:rgba(248,113,113,0.6);margin-top:2px;">PoleBrowse Safe Browsing</div>
+        </div>
+      </div>
+      <div id="dangerous-desc" style="font-size:13px;color:#c4a0a0;line-height:1.65;">Attackers on <strong id="dangerous-host" style="color:#f87171;font-family:var(--mono);font-size:12px;background:rgba(224,92,92,0.1);padding:1px 6px;border-radius:4px;">this site</strong> may trick you into doing something dangerous — like installing harmful software or revealing your passwords, phone numbers, or credit card details.</div>
+      <div id="dangerous-url-box" style="font-size:11px;font-family:var(--mono);color:rgba(248,113,113,0.5);background:rgba(224,92,92,0.06);border:1px solid rgba(224,92,92,0.15);border-radius:6px;padding:6px 12px;word-break:break-all;"></div>
+      <div id="dangerous-errcode" style="font-size:10px;font-family:var(--mono);color:rgba(248,113,113,0.35);margin-top:-8px;padding-left:2px;"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button onclick="goBackFromDangerous()" style="height:38px;padding:0 22px;background:#c0392b;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--ff);">← Back to safety</button>
+        <button onclick="proceedDangerous()" style="height:38px;padding:0 20px;background:transparent;color:rgba(248,113,113,0.6);border:1px solid rgba(224,92,92,0.25);border-radius:8px;font-size:12px;cursor:pointer;font-family:var(--ff);">Proceed anyway (unsafe)</button>
+      </div>
+    </div>
+    <!-- Info strip -->
+    <div style="width:calc(100% - 32px);background:var(--l1);border:1px solid var(--border);border-top:none;border-radius:0 0 12px 12px;padding:14px 24px;font-size:11.5px;color:var(--muted);line-height:1.6;">
+      PoleBrowse Safe Browsing detected this site as potentially dangerous. This warning helps protect you from phishing, malware, and social engineering attacks.
+    </div>
+  </div>
+</div>
+
+<script>
+  function goBackFromDangerous() {
+    closeAllRidellPages();
+    window.ipc && window.ipc.send('view-hide');
+    document.getElementById('homepage').style.display = 'flex';
+    const tab = tabs.find(t => t.id === activeId);
+    if (tab) { tab.url = ''; tab.title = 'New Tab'; renderTabs(); }
+  }
+  function proceedDangerous() {
+    const url = document.getElementById('dangerous-url-box').textContent;
+    if (!url) return;
+    closeAllRidellPages();
+    document.getElementById('homepage').style.display = 'none';
+    const tab = tabs.find(t => t.id === activeId);
+    if (tab) { tab.url = url; tab.title = url; renderTabs(); }
+    window.ipc && window.ipc.send('view-navigate', { tabId: activeId, url: url, bypassDangerous: true });
+    window.ipc && window.ipc.send('view-show', { tabId: activeId });
+  }
+  function showNoInternet(url) {
+    closeAllRidellPages();
+    window.ipc && window.ipc.send('view-hide');
+    document.getElementById('homepage').style.display = 'none';
+    const el = document.getElementById('nointernet-url');
+    if (el) el.textContent = url || '';
+    const pg = document.getElementById('ridell-no-internet');
+    if (pg) pg.classList.add('open');
+    const tab = tabs.find(t => t.id === activeId);
+    if (tab) { tab.title = 'No internet'; renderTabs(); }
+  }
+  function showDangerous(url, errorCode) {
+    closeAllRidellPages();
+    window.ipc && window.ipc.send('view-hide');
+    document.getElementById('homepage').style.display = 'none';
+    // Adapt headline + message based on error type
+    const isSsl = errorCode && (errorCode.includes('SSL') || errorCode.includes('CERT'));
+    const isRefused = errorCode && errorCode.includes('ERR_CONNECTION_REFUSED');
+    const headline = document.getElementById('dangerous-headline');
+    const subline = document.getElementById('dangerous-subline');
+    const desc = document.getElementById('dangerous-desc');
+    if (isSsl) {
+      if (headline) headline.textContent = 'Your connection is not private';
+      if (subline) subline.textContent = 'SSL / Certificate error';
+      if (desc) desc.innerHTML = 'Attackers may be trying to steal your information from <strong id="dangerous-host" style="color:#f87171;font-family:var(--mono);font-size:12px;background:rgba(224,92,92,0.1);padding:1px 6px;border-radius:4px;"></strong>. The site\'s security certificate could not be verified or uses an outdated cipher.';
+    } else if (isRefused) {
+      if (headline) headline.textContent = 'Connection refused';
+      if (subline) subline.textContent = 'PoleBrowse Safe Browsing';
+      if (desc) desc.innerHTML = 'The server at <strong id="dangerous-host" style="color:#f87171;font-family:var(--mono);font-size:12px;background:rgba(224,92,92,0.1);padding:1px 6px;border-radius:4px;"></strong> actively refused the connection. The site may be down, blocked, or flagged as unsafe.';
+    } else {
+      if (headline) headline.textContent = 'Deceptive site ahead';
+      if (subline) subline.textContent = 'PoleBrowse Safe Browsing';
+      if (desc) desc.innerHTML = 'Attackers on <strong id="dangerous-host" style="color:#f87171;font-family:var(--mono);font-size:12px;background:rgba(224,92,92,0.1);padding:1px 6px;border-radius:4px;"></strong> may trick you into doing something dangerous — like installing harmful software or revealing your passwords, phone numbers, or credit card details.';
+    }
+    try {
+      const u = new URL(url);
+      document.querySelectorAll('#dangerous-host').forEach(el => el.textContent = u.hostname);
+    } catch(e) { document.querySelectorAll('#dangerous-host').forEach(el => el.textContent = url); }
+    document.getElementById('dangerous-url-box').textContent = url;
+    const errEl = document.getElementById('dangerous-errcode');
+    if (errEl) errEl.textContent = errorCode || '';
+    const pg = document.getElementById('ridell-dangerous');
+    if (pg) pg.classList.add('open');
+    const tab = tabs.find(t => t.id === activeId);
+    if (tab) { tab.title = isSsl ? 'Not private' : isRefused ? 'Connection refused' : 'Dangerous site'; renderTabs(); }
+  }
+  // Listen for error/dangerous events from main process
+  if (window.ipc) {
+    window.ipc.on('page-load-error', function(data) {
+      if (!data || data.tabId !== activeId) return;
+      const err = data.errorCode || '';
+      if (['ERR_INTERNET_DISCONNECTED','ERR_NAME_NOT_RESOLVED','ERR_CONNECTION_REFUSED',
+           'ERR_NETWORK_CHANGED','ERR_CONNECTION_TIMED_OUT','ERR_CONNECTION_RESET',
+           'ERR_ADDRESS_UNREACHABLE'].some(e => err.includes(e))) {
+        showNoInternet(data.url || '');
+      }
+    });
+    window.ipc.on('site-dangerous', function(data) {
+      if (!data || data.tabId !== activeId) return;
+      showDangerous(data.url || '', data.errorCode || '');
+    });
+  }
+</script>
+
+<script>
+
+  // ── THEME TOGGLE ────────────────────────────────────────────────
+  function applyTheme(theme) {
+    if (theme === 'light') {
+      document.body.classList.add('light');
+      const dark = document.getElementById('st-dark');
+      const light = document.getElementById('st-light');
+      const desc = document.getElementById('theme-desc');
+      if (dark) dark.classList.remove('active');
+      if (light) light.classList.add('active');
+      if (desc) desc.textContent = 'PoleBrowse light theme';
+    } else {
+      document.body.classList.remove('light');
+      const dark = document.getElementById('st-dark');
+      const light = document.getElementById('st-light');
+      const desc = document.getElementById('theme-desc');
+      if (dark) dark.classList.add('active');
+      if (light) light.classList.remove('active');
+      if (desc) desc.textContent = 'PoleBrowse dark theme';
+    }
+    try { localStorage.setItem('pb-theme', theme); } catch(e) {}
+  }
+
+  // Load saved theme
+  try {
+    const saved = localStorage.getItem('pb-theme');
+    if (saved) applyTheme(saved);
+  } catch(e) {}
+
+  // Wire buttons
+  document.addEventListener('DOMContentLoaded', () => {
+    const darkBtn = document.getElementById('st-dark');
+    const lightBtn = document.getElementById('st-light');
+    if (darkBtn) darkBtn.addEventListener('click', () => applyTheme('dark'));
+    if (lightBtn) lightBtn.addEventListener('click', () => applyTheme('light'));
+  });
+
+  // ── DNS SETTINGS ─────────────────────────────────────────────────
+const DNS_DESCS = {
+  cloudflare: { desc: 'Cloudflare · 1.1.1.1 / 1.0.0.1',          ips: 'Primary: 1.1.1.1 · Secondary: 1.0.0.1' },
+  google:     { desc: 'Google · 8.8.8.8 / 8.8.4.4',              ips: 'Primary: 8.8.8.8 · Secondary: 8.8.4.4' },
+  quad9:      { desc: 'Quad9 · 9.9.9.9 — blocks malware domains', ips: 'Primary: 9.9.9.9 · Secondary: 149.112.112.112' },
+  adguard:    { desc: 'AdGuard DNS — blocks ads & trackers',       ips: 'Primary: 94.140.14.14 · Secondary: 94.140.15.15' },
+  nextdns:    { desc: 'NextDNS · Customizable filtering',          ips: 'Primary: 45.90.28.0 · Secondary: 45.90.30.0' },
+  opendns:    { desc: 'OpenDNS · 208.67.222.222 / 220',           ips: 'Primary: 208.67.222.222 · Secondary: 208.67.220.220' },
+  mullvad:    { desc: 'Mullvad · Privacy-first, no logging',       ips: 'Primary: 194.242.2.2 · Secondary: 194.242.2.3' },
+  controld:   { desc: 'Control D · Flexible filtering',           ips: 'Primary: 76.76.2.0 · Secondary: 76.76.10.0' },
+};
+
+function setDnsProtectedUI(enabled) {
+  const dot = document.getElementById('dns-status-dot');
+  const lbl = document.getElementById('dns-status-label');
+  const toggle = document.getElementById('dns-toggle');
+  const sel = document.getElementById('dns-provider-select');
+  const testBtn = document.getElementById('dns-test-btn');
+  if (dot) { dot.style.background = enabled ? 'var(--green)' : 'var(--red)'; dot.style.boxShadow = enabled ? '0 0 6px var(--green)' : 'none'; }
+  if (lbl) { lbl.textContent = enabled ? 'Protected' : 'Unprotected'; lbl.style.color = enabled ? 'var(--green)' : 'var(--red)'; }
+  if (toggle) toggle.checked = enabled;
+  if (sel) sel.disabled = !enabled;
+  if (testBtn) testBtn.disabled = !enabled;
+}
+
+async function initDnsUI() {
+  if (!window.ipc) return;
+  const sel = document.getElementById('dns-provider-select');
+  const desc = document.getElementById('dns-provider-desc');
+  const ips = document.getElementById('dns-ips-label');
+  const toggle = document.getElementById('dns-toggle');
+  const overlay = document.getElementById('dns-warning-overlay');
+  if (!sel) return;
+
+  // Load current state
+  const data = await window.ipc.invoke('get-dns-providers');
+  if (data) {
+    sel.value = data.active;
+    const info = DNS_DESCS[data.active] || {};
+    if (desc) desc.textContent = info.desc || '';
+    if (ips) ips.textContent = info.ips || '';
+    setDnsProtectedUI(data.enabled !== false);
+  }
+
+  // Toggle — intercept turning OFF with warning
+  if (toggle) {
+    toggle.addEventListener('change', async () => {
+      if (!toggle.checked) {
+        // User wants to turn off — show warning, revert toggle visually
+        toggle.checked = true;
+        if (overlay) overlay.style.display = 'flex';
+      } else {
+        // Turning back on
+        setDnsProtectedUI(true);
+        await window.ipc.invoke('toggle-dns', true);
+        sel.disabled = false;
+      }
+    });
+  }
+
+  // Warning modal buttons
+  const cancelBtn = document.getElementById('dns-warning-cancel');
+  const confirmBtn = document.getElementById('dns-warning-confirm');
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', () => {
+      if (overlay) overlay.style.display = 'none';
+      setDnsProtectedUI(true); // keep on
+    });
+  }
+  if (confirmBtn) {
+    confirmBtn.addEventListener('click', async () => {
+      if (overlay) overlay.style.display = 'none';
+      setDnsProtectedUI(false);
+      await window.ipc.invoke('toggle-dns', false);
+    });
+  }
+
+  // Close overlay on backdrop click
+  if (overlay) {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) { overlay.style.display = 'none'; setDnsProtectedUI(true); }
+    });
+  }
+
+  // Provider change
+  sel.addEventListener('change', async () => {
+    const key = sel.value;
+    const info = DNS_DESCS[key] || {};
+    if (desc) desc.textContent = info.desc || '';
+    if (ips) ips.textContent = info.ips || '';
+    const dot = document.getElementById('dns-status-dot');
+    const lbl = document.getElementById('dns-status-label');
+    if (dot) { dot.style.background = 'var(--muted)'; dot.style.boxShadow = 'none'; }
+    if (lbl) { lbl.textContent = 'Switching...'; lbl.style.color = 'var(--muted)'; }
+    const result = await window.ipc.invoke('set-dns-provider', key);
+    if (result && result.success) {
+      if (dot) { dot.style.background = 'var(--green)'; dot.style.boxShadow = '0 0 6px var(--green)'; }
+      if (lbl) { lbl.textContent = 'Protected'; lbl.style.color = 'var(--green)'; }
+    } else {
+      if (dot) { dot.style.background = 'var(--red)'; dot.style.boxShadow = 'none'; }
+      if (lbl) { lbl.textContent = 'Error'; lbl.style.color = 'var(--red)'; }
+    }
+  });
+
+  // Test button
+  const testBtn = document.getElementById('dns-test-btn');
+  const resultRow = document.getElementById('dns-test-result-row');
+  const resultEl = document.getElementById('dns-test-result');
+  if (testBtn) {
+    testBtn.addEventListener('click', async () => {
+      testBtn.textContent = 'Testing...';
+      testBtn.disabled = true;
+      const res = await window.ipc.invoke('test-dns');
+      if (resultRow) resultRow.style.display = 'flex';
+      if (res && res.success) {
+        if (resultEl) { resultEl.textContent = '✓ DNS resolved · ' + (res.addresses || []).join(', '); resultEl.style.color = 'var(--green)'; }
+      } else {
+        if (resultEl) { resultEl.textContent = '✗ Failed · ' + (res ? res.error : 'Unknown error'); resultEl.style.color = 'var(--red)'; }
+      }
+      testBtn.textContent = 'Test DNS';
+      testBtn.disabled = false;
+    });
+  }
+}
+
+// Init when settings page opens
+const _origRenderSettings = typeof renderSettings !== 'undefined' ? renderSettings : null;
+document.addEventListener('DOMContentLoaded', () => {
+  // Observe settings page opening
+  const obs = new MutationObserver(() => {
+    const pg = document.getElementById('ridell-settings');
+    if (pg && pg.classList.contains('open')) initDnsUI();
+  });
+  const settingsPg = document.getElementById('ridell-settings');
+  if (settingsPg) obs.observe(settingsPg, { attributes: true, attributeFilter: ['class'] });
+});
+</script>
+
+<!-- ── DNS DISABLE WARNING MODAL ──────────────────────────────── -->
+<div id="dns-warning-overlay" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+  <div style="background:var(--l2);border:1.5px solid rgba(240,96,96,0.4);border-radius:16px;padding:32px 36px;max-width:420px;width:90%;display:flex;flex-direction:column;gap:18px;box-shadow:0 24px 64px rgba(0,0,0,0.7);">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div style="width:44px;height:44px;border-radius:12px;background:rgba(240,96,96,0.12);border:1px solid rgba(240,96,96,0.3);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🛡️</div>
+      <div>
+        <div style="font-size:16px;font-weight:700;color:var(--red);">Disable DNS Protection?</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">This may expose your browsing</div>
+      </div>
+    </div>
+    <div style="font-size:13px;color:#c4a0a0;line-height:1.65;">
+      Turning off DNS protection means your DNS queries will be sent <strong style="color:var(--red);">unencrypted</strong> using your system's default DNS. Your ISP, network admin, or attackers on the same network may be able to see which sites you visit.
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button id="dns-warning-cancel" style="height:36px;padding:0 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--ff);">Keep Protected</button>
+      <button id="dns-warning-confirm" style="height:36px;padding:0 20px;background:transparent;color:var(--red);border:1px solid rgba(240,96,96,0.35);border-radius:8px;font-size:13px;cursor:pointer;font-family:var(--ff);">Turn Off Anyway</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

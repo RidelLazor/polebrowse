@@ -1,0 +1,87 @@
+name: Build PoleBrowse
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  release:
+    types: [created]
+
+jobs:
+  # ── LINUX BUILD ───────────────────────────────────────────────────
+  build-linux:
+    name: Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm fakeroot dpkg
+      - run: npm ci
+      - name: Build Linux (deb + zip)
+        run: npx electron-forge make --platform linux --targets @electron-forge/maker-deb,@electron-forge/maker-zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PoleBrowse-Linux
+          path: |
+            out/make/deb/**/*.deb
+            out/make/zip/linux/**/*.zip
+
+  # ── WINDOWS BUILD ─────────────────────────────────────────────────
+  build-windows:
+    name: Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+      - run: npm ci
+      - name: Build Windows (installer + zip)
+        run: npx electron-forge make --platform win32 --targets @electron-forge/maker-squirrel,@electron-forge/maker-zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PoleBrowse-Windows
+          path: |
+            out/make/squirrel.windows/**/*.exe
+            out/make/squirrel.windows/**/*.nupkg
+            out/make/zip/win32/**/*.zip
+
+  # ── MACOS BUILD ───────────────────────────────────────────────────
+  build-mac:
+    name: macOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+      - run: npm ci
+      - name: Build macOS (zip)
+        run: npx electron-forge make --platform darwin --targets @electron-forge/maker-zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PoleBrowse-macOS
+          path: out/make/zip/darwin/**/*.zip
+
+  # ── AUTO RELEASE ──────────────────────────────────────────────────
+  release:
+    name: Create Release
+    needs: [build-linux, build-windows, build-mac]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v1
+        with:
+          files: artifacts/**/*
