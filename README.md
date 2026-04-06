@@ -1,6 +1,6 @@
 <div align="center">
   <h1>🌐 PoleBrowse</h1>
-  <p>A fast, private desktop browser built with Electron</p>
+  <p>A fast, open-source, private desktop browser built with Electron</p>
   <p>by <strong>RidelL</strong></p>
 
   ![Version](https://img.shields.io/badge/version-1.0.0-blue)
@@ -13,7 +13,6 @@
 ## Features
 - 🛡️ DNS-over-HTTPS protection (8 providers)
 - 🌙 Dark & Light mode
-- 🧩 Chrome extension support
 - 📚 History, bookmarks, downloads
 - 🔒 Safe browsing (dangerous site detection)
 - 🦖 No internet page
