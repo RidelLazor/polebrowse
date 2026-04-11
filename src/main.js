@@ -12,6 +12,67 @@ const DNS_PROVIDERS = {
   controld:    { name: 'Control D',        url: 'https://freedns.controld.com/p0',               ips: ['76.76.2.0', '76.76.10.0'] },
 };
 
+
+// ── VPN / PROXY CONFIG ────────────────────────────────────────────
+const VPN_PROVIDERS = {
+  none:       { name: 'No VPN (Direct)',    type: null,     info: 'Direct connection, no proxy' },
+  tor:        { name: 'Tor Network',        type: 'socks5', host: '127.0.0.1', port: 9050,  info: 'Requires Tor Browser or tor service running' },
+  i2p:        { name: 'I2P',               type: 'socks5', host: '127.0.0.1', port: 4444,  info: 'Requires I2P running locally' },
+  privoxy:    { name: 'Privoxy',           type: 'http',   host: '127.0.0.1', port: 8118,  info: 'Requires Privoxy running locally' },
+  mullvad:    { name: 'Mullvad SOCKS',     type: 'socks5', host: 'socks5.mullvad.net', port: 1080, info: 'Requires Mullvad account' },
+  windscribe: { name: 'Windscribe SOCKS',  type: 'socks5', host: 'nl.windscribe.com', port: 1080,  info: 'Requires Windscribe account' },
+  custom:     { name: 'Custom Proxy',      type: 'socks5', host: '127.0.0.1', port: 1080,  info: 'Enter your own proxy address' },
+};
+
+let activeVpnKey   = 'none';
+let vpnEnabled     = false;
+let customProxyHost = '127.0.0.1';
+let customProxyPort = 1080;
+let customProxyType = 'socks5';
+
+function applyProxy(ses, providerKey) {
+  const provider = VPN_PROVIDERS[providerKey] || VPN_PROVIDERS.none;
+  activeVpnKey = providerKey;
+  if (!provider.type || !vpnEnabled) {
+    ses.setProxy({ proxyRules: 'direct://' });
+    console.log('[VPN] Direct connection');
+    return;
+  }
+  const host = providerKey === 'custom' ? customProxyHost : provider.host;
+  const port = providerKey === 'custom' ? customProxyPort : provider.port;
+  const rule = `${provider.type}://${host}:${port}`;
+  ses.setProxy({ proxyRules: rule });
+  console.log('[VPN] Proxy active:', rule);
+}
+
+function disableProxy(ses) {
+  vpnEnabled = false;
+  ses.setProxy({ proxyRules: 'direct://' });
+  console.log('[VPN] Proxy disabled');
+}
+
+
+// ── AD BLOCKER ────────────────────────────────────────────────────
+let adBlockEnabled = true;
+let globalBlockedCount = 0;
+const AD_HOSTS = new Set([
+  'doubleclick.net','googlesyndication.com','googleadservices.com',
+  'adnxs.com','adsafeprotected.com','moatads.com','scorecardresearch.com',
+  'quantserve.com','outbrain.com','taboola.com','criteo.com','rubiconproject.com',
+  'openx.net','pubmatic.com','advertising.com','amazon-adsystem.com',
+  'facebook.com/tr','connect.facebook.net','analytics.twitter.com',
+  'google-analytics.com','googletagmanager.com','hotjar.com','mixpanel.com',
+  'segment.com','amplitude.com','fullstory.com','logrocket.com',
+]);
+function isAdHost(url) {
+  try {
+    const h = new URL(url).hostname.replace(/^www\./, '');
+    const blocked = adBlockEnabled && (AD_HOSTS.has(h) || [...AD_HOSTS].some(d => h.endsWith('.' + d)));
+    if (blocked) globalBlockedCount++;
+    return blocked;
+  } catch(e) { return false; }
+}
+
 let activeDnsKey = 'cloudflare'; // default
 let dnsEnabled = true; // default ON
 
@@ -866,6 +927,18 @@ app.whenReady().then(function() {
   // Spoof UA globally so CWS thinks we're Chrome
   session.defaultSession.setUserAgent(CHROME_UA);
 
+  // Ad blocker
+  session.defaultSession.webRequest.onBeforeRequest(
+    { urls: ['*://*/*'] },
+    function(details, callback) {
+      if (isAdHost(details.url)) {
+        callback({ cancel: true });
+      } else {
+        callback({ cancel: false });
+      }
+    }
+  );
+
   // Override headers on every request to CWS — strip Electron fingerprint
   session.defaultSession.webRequest.onBeforeSendHeaders(
     { urls: ['*://chrome.google.com/*', '*://chromewebstore.google.com/*', '*://*.google.com/*'] },
@@ -983,6 +1056,58 @@ app.on('window-all-closed', function() {
   if (process.platform !== 'darwin') app.quit();
 });
 
+// ── VPN IPC HANDLERS ─────────────────────────────────────────
+ipcMain.handle('get-vpn-state', function() {
+  return { providers: VPN_PROVIDERS, active: activeVpnKey, enabled: vpnEnabled };
+});
+
+ipcMain.handle('set-vpn-provider', function(e, key) {
+  if (!VPN_PROVIDERS[key]) return { success: false, error: 'Unknown provider' };
+  activeVpnKey = key;
+  if (vpnEnabled) applyProxy(session.defaultSession, key);
+  return { success: true, provider: VPN_PROVIDERS[key].name };
+});
+
+ipcMain.handle('toggle-vpn', function(e, enable) {
+  vpnEnabled = enable;
+  if (enable) {
+    applyProxy(session.defaultSession, activeVpnKey);
+  } else {
+    disableProxy(session.defaultSession);
+  }
+  return { success: true, enabled: vpnEnabled };
+});
+
+ipcMain.handle('set-custom-proxy', function(e, data) {
+  customProxyHost = data.host || '127.0.0.1';
+  customProxyPort = parseInt(data.port) || 1080;
+  customProxyType = data.type || 'socks5';
+  VPN_PROVIDERS.custom.host = customProxyHost;
+  VPN_PROVIDERS.custom.port = customProxyPort;
+  VPN_PROVIDERS.custom.type = customProxyType;
+  if (vpnEnabled && activeVpnKey === 'custom') applyProxy(session.defaultSession, 'custom');
+  return { success: true };
+});
+
+ipcMain.handle('test-vpn', async function() {
+  try {
+    const result = await session.defaultSession.resolveHost('example.com');
+    return { success: true, addresses: result.endpoints ? result.endpoints.map(e => e.address) : [] };
+  } catch(err) {
+    return { success: false, error: err.message };
+  }
+});
+
+// ── ADBLOCKER IPC ────────────────────────────────────────────────
+ipcMain.handle('get-adblocker-state', function() {
+  return { enabled: adBlockEnabled, blockedCount: globalBlockedCount };
+});
+
+ipcMain.handle('toggle-adblocker', function(e, enable) {
+  adBlockEnabled = enable;
+  return { success: true, enabled: adBlockEnabled };
+});
+
 // ── DNS IPC HANDLERS ─────────────────────────────────────────────
 ipcMain.handle('get-dns-providers', function() {
   return { providers: DNS_PROVIDERS, active: activeDnsKey, enabled: dnsEnabled };
@@ -1010,5 +1135,66 @@ ipcMain.handle('test-dns', async function() {
   } catch(err) {
     return { success: false, error: err.message };
   }
+});
+
+// ── VPN IPC HANDLERS ─────────────────────────────────────────────
+ipcMain.handle('get-vpn-state', function() {
+  return { providers: VPN_PROVIDERS, active: activeVpnKey, enabled: vpnEnabled,
+           customHost: customProxyHost, customPort: customProxyPort, customType: customProxyType };
+});
+
+ipcMain.handle('set-vpn-provider', function(e, key) {
+  if (!VPN_PROVIDERS[key]) return { success: false, error: 'Unknown provider' };
+  activeVpnKey = key;
+  if (vpnEnabled) applyProxy(session.defaultSession, key);
+  return { success: true, provider: VPN_PROVIDERS[key].name };
+});
+
+ipcMain.handle('toggle-vpn', function(e, enable, opts) {
+  vpnEnabled = enable;
+  if (opts) {
+    if (opts.host) customProxyHost = opts.host;
+    if (opts.port) customProxyPort = parseInt(opts.port);
+    if (opts.type) customProxyType = opts.type;
+    VPN_PROVIDERS.custom.host = customProxyHost;
+    VPN_PROVIDERS.custom.port = customProxyPort;
+    VPN_PROVIDERS.custom.type = customProxyType;
+  }
+  if (enable) {
+    applyProxy(session.defaultSession, activeVpnKey);
+  } else {
+    disableProxy(session.defaultSession);
+  }
+  return { success: true, enabled: vpnEnabled };
+});
+
+ipcMain.handle('test-proxy', async function() {
+  try {
+    const { net } = require('electron');
+    const req = net.request({ method: 'GET', url: 'https://api.ipify.org?format=json', useSessionCookies: false });
+    return await new Promise((resolve) => {
+      req.on('response', (resp) => {
+        let data = '';
+        resp.on('data', chunk => data += chunk);
+        resp.on('end', () => {
+          try { resolve({ success: true, ip: JSON.parse(data).ip }); }
+          catch(e) { resolve({ success: true, ip: data.trim() }); }
+        });
+      });
+      req.on('error', err => resolve({ success: false, error: err.message }));
+      req.end();
+    });
+  } catch(err) {
+    return { success: false, error: err.message };
+  }
+});
+
+// ── ADBLOCK IPC ──────────────────────────────────────────────────
+ipcMain.handle('get-adblock-state', function() {
+  return { enabled: adBlockEnabled, blockedCount: global._blockedCount || 0 };
+});
+ipcMain.handle('toggle-adblock', function(e, enable) {
+  adBlockEnabled = enable;
+  return { success: true, enabled: adBlockEnabled };
 });
 

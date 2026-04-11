@@ -158,9 +158,8 @@ body.light .sc:hover {
 body.light .sc-icon {
   background:var(--l2);
 }
-body.light #hp-time {
-  color:var(--muted);
-}
+body.light #hp-time { color:var(--text); }
+body.light #hp-date { color:var(--muted); }
 body.light ::-webkit-scrollbar-thumb {
   background:rgba(0,0,0,0.15);
 }
@@ -261,23 +260,78 @@ html,body { width:100%;height:100%;overflow:hidden;background:var(--bg);color:va
 .hist-fav { width:14px;height:14px;border-radius:2px;flex-shrink:0;object-fit:contain; }
 
 /* HOMEPAGE */
-#homepage { flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px;background:var(--bg);background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px;position:relative; }
-#homepage::before { content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 30%,var(--bg) 80%);pointer-events:none; }
-#hp-inner { position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:28px; }
-#hp-logo { font-size:56px;font-weight:600;letter-spacing:-2px;line-height:1;display:flex;align-items:center; }
-#hp-logo .p1 { color:var(--text); } #hp-logo .p2 { color:var(--accent); }
-#hp-search-wrap { position:relative;width:580px; }
-#hp-search { width:100%;height:52px;background:var(--l1);border:1px solid var(--border2);border-radius:12px;color:var(--text);font-family:var(--ff);font-size:14px;padding:0 52px 0 18px;outline:none;transition:border-color .15s,box-shadow .15s; }
-#hp-search:focus { border-color:var(--accent);box-shadow:0 0 0 3px rgba(91,138,245,.12); }
+#homepage {
+  flex:1;min-height:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:var(--bg);position:relative;overflow:hidden;
+}
+#homepage::before {
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 50% at 50% 40%,rgba(91,138,245,0.04) 0%,transparent 70%);
+  pointer-events:none;z-index:0;
+}
+#hp-inner {
+  position:relative;z-index:1;
+  display:flex;flex-direction:column;align-items:center;
+  gap:0;padding:0 20px;width:100%;max-width:620px;
+}
+#hp-time {
+  font-size:64px;font-weight:300;
+  color:var(--text);letter-spacing:-3px;line-height:1;
+  font-family:'Outfit',sans-serif;
+  margin-bottom:6px;
+}
+#hp-date {
+  font-size:12px;color:var(--muted);
+  letter-spacing:.12em;text-transform:uppercase;
+  font-weight:400;margin-bottom:40px;
+}
+#hp-logo { display:none; }
+#hp-search-wrap { position:relative;width:100%;margin-bottom:28px; }
+#hp-search {
+  width:100%;height:48px;
+  background:var(--l1);border:1.5px solid var(--border2);border-radius:12px;
+  color:var(--text);font-family:var(--ff);font-size:14px;font-weight:400;
+  padding:0 50px 0 16px;outline:none;
+  transition:border-color .2s,box-shadow .2s,background .2s;
+}
+#hp-search:focus {
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(91,138,245,.1);
+  background:var(--l2);
+}
 #hp-search::placeholder { color:var(--muted); }
-#hp-go-btn { position:absolute;right:8px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .12s; }
-#hp-go-btn:hover { background:var(--accent2); }
-#hp-shortcuts { display:flex;gap:10px; }
-.sc { display:flex;flex-direction:column;align-items:center;gap:8px;width:96px;padding:18px 10px;border-radius:14px;background:var(--l1);border:1px solid var(--border);cursor:pointer;transition:all .15s; }
-.sc:hover { background:var(--l2);border-color:var(--accent);transform:translateY(-2px);box-shadow:0 6px 20px rgba(91,138,245,.12); }
-.sc-icon { width:44px;height:44px;border-radius:12px;background:var(--l2);display:flex;align-items:center;justify-content:center;font-size:22px; }
-.sc-label { font-size:10.5px;font-weight:500;color:var(--muted);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;letter-spacing:.02em; }
-#hp-time { font-family:var(--mono);font-size:14px;color:var(--muted);letter-spacing:1px; }
+#hp-go-btn {
+  position:absolute;right:9px;top:50%;transform:translateY(-50%);
+  width:30px;height:30px;border-radius:8px;
+  border:none;background:var(--accent);color:#fff;
+  font-size:13px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s,transform .15s;
+}
+#hp-go-btn:hover { background:var(--accent2);transform:translateY(-50%) scale(1.06); }
+#hp-shortcuts { display:flex;gap:6px;flex-wrap:wrap;justify-content:center;width:100%; }
+.sc {
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  width:76px;padding:12px 8px 10px;border-radius:10px;
+  background:transparent;border:1px solid transparent;
+  cursor:pointer;transition:all .15s;
+}
+.sc:hover { background:var(--l1);border-color:var(--border); }
+.sc-icon {
+  width:38px;height:38px;border-radius:9px;
+  background:var(--l1);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;overflow:hidden;transition:transform .15s;
+}
+.sc-icon img { width:22px;height:22px;object-fit:contain; }
+.sc:hover .sc-icon { transform:scale(1.06); }
+.sc-label {
+  font-size:10px;font-weight:500;color:var(--muted);
+  text-align:center;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;width:100%;letter-spacing:.02em;
+}
+.sc:hover .sc-label { color:var(--text); }
 
 /* SIDE PANELS */
 .side-panel { display:none;flex-direction:column;flex:1;min-height:0;background:var(--bg); }
@@ -464,6 +518,7 @@ html,body { width:100%;height:100%;overflow:hidden;background:var(--bg);color:va
   <div id="urlbar-wrap">
     <input id="urlbar" type="text" placeholder="Search or type a URL" spellcheck="false"/>
     <button id="btn-go">&#8594;</button>
+    <div id="vpn-indicator" title="VPN Off" style="width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:14px;opacity:0.35;cursor:pointer;" onclick="newTab('ridell://settings')">🛡️</div>
     <div id="suggestions"></div>
   </div>
   <button class="nbtn" id="btn-history" title="History">🕐</button>
@@ -485,7 +540,6 @@ html,body { width:100%;height:100%;overflow:hidden;background:var(--bg);color:va
   <button class="bm" data-url="https://github.com"><img class="bm-fav" src="https://www.google.com/s2/favicons?domain=github.com&sz=32" onerror="this.style.display='none'"> GitHub</button>
   <button class="bm" data-url="https://reddit.com"><img class="bm-fav" src="https://www.google.com/s2/favicons?domain=reddit.com&sz=32" onerror="this.style.display='none'"> Reddit</button>
   <button class="bm" data-url="https://x.com"><img class="bm-fav" src="https://www.google.com/s2/favicons?domain=x.com&sz=32" onerror="this.style.display='none'"> X</button>
-  <button class="bm" data-url="https://claude.ai"><img class="bm-fav" src="https://www.google.com/s2/favicons?domain=claude.ai&sz=32" onerror="this.style.display='none'"> Claude</button>
   <button class="bm" data-url="https://vercel.com"><img class="bm-fav" src="https://www.google.com/s2/favicons?domain=vercel.com&sz=32" onerror="this.style.display='none'"> Vercel</button>
   <button class="bm" data-url="https://google.com"><img class="bm-fav" src="https://www.google.com/s2/favicons?domain=google.com&sz=32" onerror="this.style.display='none'"> Google</button>
 </div>
@@ -501,12 +555,13 @@ html,body { width:100%;height:100%;overflow:hidden;background:var(--bg);color:va
     <div id="hp-shortcuts">
       <div class="sc" data-url="https://youtube.com"><div class="sc-icon"><img src="https://www.google.com/s2/favicons?domain=youtube.com&sz=64" onerror="this.replaceWith(document.createTextNode('▶'))"></div><div class="sc-label">YouTube</div></div>
       <div class="sc" data-url="https://github.com"><div class="sc-icon"><img src="https://www.google.com/s2/favicons?domain=github.com&sz=64" onerror="this.replaceWith(document.createTextNode('⚙'))"></div><div class="sc-label">GitHub</div></div>
-      <div class="sc" data-url="https://reddit.com"><div class="sc-icon"><img src="https://www.google.com/s2/favicons?domain=reddit.com&sz=64" onerror="this.replaceWith(document.createTextNode('🟠'))"></div><div class="sc-label">Reddit</div></div>
-      <div class="sc" data-url="https://claude.ai"><div class="sc-icon"><img src="https://www.google.com/s2/favicons?domain=claude.ai&sz=64" onerror="this.replaceWith(document.createTextNode('✦'))"></div><div class="sc-label">Claude</div></div>
       <div class="sc" data-url="https://x.com"><div class="sc-icon"><img src="https://www.google.com/s2/favicons?domain=x.com&sz=64" onerror="this.replaceWith(document.createTextNode('✕'))"></div><div class="sc-label">X</div></div>
-      <div class="sc" data-url="https://vercel.com"><div class="sc-icon"><img src="https://www.google.com/s2/favicons?domain=vercel.com&sz=64" onerror="this.replaceWith(document.createTextNode('▲'))"></div><div class="sc-label">Vercel</div></div>
+      <div class="sc" data-url="https://google.com"><div class="sc-icon"><img src="https://www.google.com/s2/favicons?domain=google.com&sz=64" onerror="this.replaceWith(document.createTextNode('🔍'))"></div><div class="sc-label">Google</div></div>
+      <div class="sc" data-url="https://reddit.com"><div class="sc-icon"><img src="https://www.google.com/s2/favicons?domain=reddit.com&sz=64" onerror="this.replaceWith(document.createTextNode('🟠'))"></div><div class="sc-label">Reddit</div></div>
+      <div id="sc-add-btn" class="sc" style="cursor:pointer;" onclick="openAddShortcutModal()"><div class="sc-icon" style="font-size:26px;color:var(--muted);">+</div><div class="sc-label" style="color:var(--muted);">Add Shortcut</div></div>
     </div>
     <div id="hp-time"></div>
+    <div id="hp-date"></div>
   </div>
 </div>
 
@@ -629,8 +684,8 @@ html,body { width:100%;height:100%;overflow:hidden;background:var(--bg);color:va
         <div class="settings-row">
           <div class="settings-row-info"><div class="settings-row-label">Default search engine</div><div class="settings-row-desc">Used for address bar searches</div></div>
           <select class="st-select" id="st-search-engine">
-            <option value="ridell" selected>RidelL Search</option>
-            <option value="google">Google</option>
+            <option value="google" selected>Google</option>
+            <option value="ridell">RidelL Search</option>
             <option value="bing">Bing</option>
             <option value="duckduckgo">DuckDuckGo</option>
             <option value="brave">Brave Search</option>
@@ -697,6 +752,168 @@ html,body { width:100%;height:100%;overflow:hidden;background:var(--bg);color:va
         </div>
       </div>
 
+      
+      <div class="settings-section">
+        <div class="settings-section-title">VPN & Proxy</div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">Proxy Protection</div>
+            <div class="settings-row-desc">Route traffic through a proxy or Tor for anonymity</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span id="vpn-status-dot" style="width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block;flex-shrink:0;"></span>
+            <span id="vpn-status-label" style="font-size:11px;color:var(--muted);font-family:var(--mono);">Off</span>
+            <label class="st-switch">
+              <input type="checkbox" id="vpn-toggle">
+              <span class="st-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">Proxy Provider</div>
+            <div class="settings-row-desc" id="vpn-provider-desc">Select a proxy method</div>
+          </div>
+          <select class="st-select" id="vpn-provider-select">
+            <option value="none">None (Direct)</option>
+            <option value="tor">Tor Network (port 9050)</option>
+            <option value="i2p">I2P (port 4444)</option>
+            <option value="privoxy">Privoxy (port 8118)</option>
+            <option value="custom">Custom Proxy</option>
+          </select>
+        </div>
+        <div class="settings-row" id="vpn-custom-row" style="display:none;">
+          <div class="settings-row-info">
+            <div class="settings-row-label">Custom Proxy</div>
+            <div class="settings-row-desc">host:port (e.g. 127.0.0.1:1080)</div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <select class="st-select" id="vpn-custom-type" style="width:90px;">
+              <option value="socks5">SOCKS5</option>
+              <option value="socks4">SOCKS4</option>
+              <option value="http">HTTP</option>
+            </select>
+            <input id="vpn-custom-host" type="text" placeholder="127.0.0.1" value="127.0.0.1"
+              style="width:110px;height:30px;background:var(--l2);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-family:var(--mono);font-size:12px;padding:0 8px;outline:none;">
+            <input id="vpn-custom-port" type="number" placeholder="1080" value="1080"
+              style="width:64px;height:30px;background:var(--l2);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-family:var(--mono);font-size:12px;padding:0 8px;outline:none;">
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">Your IP Address</div>
+            <div class="settings-row-desc" id="vpn-ip-label">—</div>
+          </div>
+          <button class="st-select" id="vpn-test-btn" style="cursor:pointer;border-color:var(--accent);color:var(--accent);">Check IP</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Ad & Tracker Blocker</div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">Block Ads & Trackers</div>
+            <div class="settings-row-desc">Blocks ads, analytics, and tracking scripts at the network level</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span id="adblock-status" style="font-size:11px;color:var(--green);font-family:var(--mono);">Active</span>
+            <label class="st-switch">
+              <input type="checkbox" id="adblock-toggle" checked>
+              <span class="st-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">Block List</div>
+            <div class="settings-row-desc">Ads, analytics, trackers, fingerprinting scripts</div>
+          </div>
+          <span style="font-size:11px;font-family:var(--mono);color:var(--muted);">Built-in (~30 domains)</span>
+        </div>
+      </div>
+
+      
+      <div class="settings-section">
+        <div class="settings-section-title">VPN & Proxy</div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">VPN Protection</div>
+            <div class="settings-row-desc">Route traffic through a proxy or anonymity network</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span id="vpn-status-dot" style="width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block;flex-shrink:0;"></span>
+            <span id="vpn-status-label" style="font-size:11px;color:var(--muted);font-family:var(--mono);">Off</span>
+            <label class="st-switch" id="vpn-toggle-wrap">
+              <input type="checkbox" id="vpn-toggle">
+              <span class="st-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">VPN Provider</div>
+            <div class="settings-row-desc" id="vpn-provider-desc">No proxy — direct connection</div>
+          </div>
+          <select class="st-select" id="vpn-provider-select" style="max-width:180px;">
+            <option value="none">No VPN (Direct)</option>
+            <option value="tor">Tor Network</option>
+            <option value="i2p">I2P</option>
+            <option value="privoxy">Privoxy</option>
+            <option value="mullvad">Mullvad SOCKS</option>
+            <option value="windscribe">Windscribe SOCKS</option>
+            <option value="custom">Custom Proxy</option>
+          </select>
+        </div>
+        <div class="settings-row" id="vpn-custom-row" style="display:none;">
+          <div class="settings-row-info">
+            <div class="settings-row-label">Custom Proxy</div>
+            <div class="settings-row-desc">Format: host:port (e.g. 127.0.0.1:1080)</div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            <select class="st-select" id="vpn-custom-type" style="width:90px;">
+              <option value="socks5">SOCKS5</option>
+              <option value="socks4">SOCKS4</option>
+              <option value="http">HTTP</option>
+            </select>
+            <input type="text" id="vpn-custom-host" placeholder="127.0.0.1"
+              style="width:110px;height:32px;background:var(--l2);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-family:var(--mono);font-size:12px;padding:0 8px;outline:none;">
+            <input type="text" id="vpn-custom-port" placeholder="1080"
+              style="width:60px;height:32px;background:var(--l2);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-family:var(--mono);font-size:12px;padding:0 8px;outline:none;">
+            <button id="vpn-custom-save" style="height:32px;padding:0 12px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-size:12px;font-family:var(--ff);cursor:pointer;">Save</button>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">Note</div>
+            <div class="settings-row-desc" id="vpn-note-desc" style="color:var(--accent);">Select a provider and enable VPN to route traffic through a proxy</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Ad & Tracker Blocker</div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">Ad Blocker</div>
+            <div class="settings-row-desc">Block ads, trackers and analytics scripts</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span id="adb-count" style="font-size:11px;color:var(--green);font-family:var(--mono);">0 blocked</span>
+            <label class="st-switch">
+              <input type="checkbox" id="adb-toggle" checked>
+              <span class="st-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">What gets blocked</div>
+            <div class="settings-row-desc">Google Ads, Meta Pixel, analytics, tracking pixels, ad networks (30+ providers)</div>
+          </div>
+          <span style="font-size:11px;color:var(--green);font-family:var(--mono);">Active</span>
+        </div>
+      </div>
+
       <div class="settings-section">
         <div class="settings-section-title">About</div>
         <div class="settings-row">
@@ -705,7 +922,7 @@ html,body { width:100%;height:100%;overflow:hidden;background:var(--bg);color:va
         </div>
         <div class="settings-row">
           <div class="settings-row-info"><div class="settings-row-label">PoleBrowse</div><div class="settings-row-desc">Built with Electron · Made by RidelL</div></div>
-          <div class="settings-version" style="display:flex;align-items:center;gap:6px;">v1.0.0</div>
+          <div class="settings-version" style="display:flex;align-items:center;gap:6px;">v1.1.0</div>
         </div>
         <div class="settings-row">
           <div class="settings-row-info"><div class="settings-row-label">Clear all browsing data</div><div class="settings-row-desc">History, downloads list, cached data</div></div>
@@ -826,7 +1043,7 @@ function fixUrl(raw) {
   if (/^ridell:\/\//.test(raw)) return raw;
   if (/^https?:\/\//.test(raw)) return raw;
   if (/^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}/.test(raw) && !raw.includes(' ')) return 'https://' + raw;
-  const base = window._searchBase || 'https://ridell-page-search.lovable.app/search?q=';
+  const base = window._searchBase || 'https://www.google.com/search?q=';
   return base + encodeURIComponent(raw);
 }
 
@@ -844,9 +1061,16 @@ function fileIcon(name) {
 }
 
 // ── TIME
+const _days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const _months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 function tick() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
   const el = document.getElementById('hp-time');
-  if (el) el.textContent = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  if (el) el.textContent = h + ':' + m;
+  const dateEl = document.getElementById('hp-date');
+  if (dateEl) dateEl.textContent = _days[now.getDay()] + ', ' + _months[now.getMonth()] + ' ' + now.getDate();
 }
 setInterval(tick, 1000); tick();
 
@@ -2857,6 +3081,329 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </div>
 </div>
+
+<!-- ── ADD SHORTCUT MODAL ──────────────────────────────────────── -->
+<div id="add-shortcut-overlay" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+  <div style="background:var(--l2);border:1px solid var(--border2);border-radius:16px;padding:28px 32px;width:380px;max-width:90vw;display:flex;flex-direction:column;gap:16px;box-shadow:0 24px 64px rgba(0,0,0,0.6);">
+    <div style="font-size:16px;font-weight:700;color:var(--text);">Add Shortcut</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <label style="font-size:12px;color:var(--muted);font-weight:500;">Name</label>
+      <input id="sc-add-name" type="text" placeholder="e.g. Google" spellcheck="false"
+        style="height:36px;background:var(--l3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--ff);font-size:13px;padding:0 12px;outline:none;transition:border-color .15s;"
+        onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'">
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <label style="font-size:12px;color:var(--muted);font-weight:500;">URL</label>
+      <input id="sc-add-url" type="text" placeholder="https://example.com" spellcheck="false"
+        style="height:36px;background:var(--l3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:12px;padding:0 12px;outline:none;transition:border-color .15s;"
+        onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'">
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px;">
+      <button onclick="closeAddShortcutModal()" style="height:36px;padding:0 20px;background:var(--l3);color:var(--muted);border:1px solid var(--border2);border-radius:8px;font-size:13px;cursor:pointer;font-family:var(--ff);">Cancel</button>
+      <button onclick="confirmAddShortcut()" style="height:36px;padding:0 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--ff);">Add</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── ADD SHORTCUT ─────────────────────────────────────────────────
+function openAddShortcutModal() {
+  const overlay = document.getElementById('add-shortcut-overlay');
+  if (overlay) {
+    overlay.style.display = 'flex';
+    setTimeout(() => document.getElementById('sc-add-name').focus(), 50);
+  }
+}
+function closeAddShortcutModal() {
+  const overlay = document.getElementById('add-shortcut-overlay');
+  if (overlay) overlay.style.display = 'none';
+  document.getElementById('sc-add-name').value = '';
+  document.getElementById('sc-add-url').value = '';
+}
+function confirmAddShortcut() {
+  const name = document.getElementById('sc-add-name').value.trim();
+  let url = document.getElementById('sc-add-url').value.trim();
+  if (!name || !url) return;
+  if (!/^https?:\/\//.test(url)) url = 'https://' + url;
+
+  // Build new shortcut element
+  const shortcuts = document.getElementById('hp-shortcuts');
+  const addBtn = document.getElementById('sc-add-btn');
+  const sc = document.createElement('div');
+  sc.className = 'sc';
+  sc.dataset.url = url;
+  const favicon = `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=64`;
+  sc.innerHTML = `<div class="sc-icon"><img src="${favicon}" onerror="this.replaceWith(document.createTextNode('🔗'))"></div><div class="sc-label">${name}</div>`;
+  sc.addEventListener('click', () => navigate(url));
+
+  // Right-click to remove
+  sc.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    if (confirm('Remove "' + name + '" shortcut?')) sc.remove();
+  });
+
+  shortcuts.insertBefore(sc, addBtn);
+  closeAddShortcutModal();
+}
+
+// Close on backdrop click
+document.getElementById('add-shortcut-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeAddShortcutModal();
+});
+
+// Enter key in inputs
+['sc-add-name','sc-add-url'].forEach(id => {
+  document.getElementById(id).addEventListener('keydown', e => {
+    if (e.key === 'Enter') confirmAddShortcut();
+    if (e.key === 'Escape') closeAddShortcutModal();
+  });
+});
+</script>
+
+<script>
+// ── VPN SETTINGS ─────────────────────────────────────────────────
+const VPN_DESCS = {
+  none:    'Direct connection — no proxy',
+  tor:     'Tor Network — routes through Tor (must be running)',
+  i2p:     'I2P — routes through I2P network (must be running)',
+  privoxy: 'Privoxy — local HTTP proxy (must be running)',
+  custom:  'Custom proxy — configure host/port below',
+};
+
+async function initVpnUI() {
+  if (!window.ipc) return;
+  const sel     = document.getElementById('vpn-provider-select');
+  const desc    = document.getElementById('vpn-provider-desc');
+  const toggle  = document.getElementById('vpn-toggle');
+  const dot     = document.getElementById('vpn-status-dot');
+  const lbl     = document.getElementById('vpn-status-label');
+  const testBtn = document.getElementById('vpn-test-btn');
+  const ipLbl   = document.getElementById('vpn-ip-label');
+  const customRow = document.getElementById('vpn-custom-row');
+  if (!sel) return;
+
+  function setVpnUI(enabled) {
+    if (dot) { dot.style.background = enabled ? 'var(--green)' : 'var(--muted)'; dot.style.boxShadow = enabled ? '0 0 6px var(--green)' : 'none'; }
+    if (lbl) { lbl.textContent = enabled ? 'Active' : 'Off'; lbl.style.color = enabled ? 'var(--green)' : 'var(--muted)'; }
+    if (toggle) toggle.checked = enabled;
+  }
+
+  const data = await window.ipc.invoke('get-vpn-state');
+  if (data) {
+    sel.value = data.active || 'none';
+    if (desc) desc.textContent = VPN_DESCS[data.active] || '';
+    setVpnUI(data.enabled || false);
+    if (data.active === 'custom') customRow.style.display = 'flex';
+    if (data.customHost) document.getElementById('vpn-custom-host').value = data.customHost;
+    if (data.customPort) document.getElementById('vpn-custom-port').value = data.customPort;
+    if (data.customType) document.getElementById('vpn-custom-type').value = data.customType;
+  }
+
+  sel.addEventListener('change', async () => {
+    const key = sel.value;
+    if (desc) desc.textContent = VPN_DESCS[key] || '';
+    customRow.style.display = key === 'custom' ? 'flex' : 'none';
+    await window.ipc.invoke('set-vpn-provider', key);
+    if (toggle.checked) {
+      const opts = key === 'custom' ? {
+        host: document.getElementById('vpn-custom-host').value,
+        port: document.getElementById('vpn-custom-port').value,
+        type: document.getElementById('vpn-custom-type').value,
+      } : {};
+      await window.ipc.invoke('toggle-vpn', true, opts);
+    }
+  });
+
+  toggle.addEventListener('change', async () => {
+    const enable = toggle.checked;
+    const key = sel.value;
+    const opts = key === 'custom' ? {
+      host: document.getElementById('vpn-custom-host').value,
+      port: document.getElementById('vpn-custom-port').value,
+      type: document.getElementById('vpn-custom-type').value,
+    } : {};
+    const res = await window.ipc.invoke('toggle-vpn', enable, opts);
+    setVpnUI(res.enabled);
+  });
+
+  testBtn.addEventListener('click', async () => {
+    testBtn.textContent = 'Checking...';
+    testBtn.disabled = true;
+    const res = await window.ipc.invoke('test-proxy');
+    if (ipLbl) {
+      ipLbl.textContent = res.success ? '🌍 ' + res.ip : '✗ ' + (res.error || 'Failed');
+      ipLbl.style.color = res.success ? 'var(--green)' : 'var(--red)';
+    }
+    testBtn.textContent = 'Check IP';
+    testBtn.disabled = false;
+  });
+}
+
+// ── ADBLOCK SETTINGS ─────────────────────────────────────────────
+async function initAdblockUI() {
+  if (!window.ipc) return;
+  const toggle = document.getElementById('adblock-toggle');
+  const status = document.getElementById('adblock-status');
+  if (!toggle) return;
+
+  const data = await window.ipc.invoke('get-adblock-state');
+  if (data) {
+    toggle.checked = data.enabled;
+    if (status) { status.textContent = data.enabled ? 'Active' : 'Off'; status.style.color = data.enabled ? 'var(--green)' : 'var(--muted)'; }
+  }
+
+  toggle.addEventListener('change', async () => {
+    const res = await window.ipc.invoke('toggle-adblock', toggle.checked);
+    if (status) { status.textContent = res.enabled ? 'Active' : 'Off'; status.style.color = res.enabled ? 'var(--green)' : 'var(--muted)'; }
+  });
+}
+
+// Hook into settings page open
+const _vpnObs = new MutationObserver(() => {
+  const pg = document.getElementById('ridell-settings');
+  if (pg && pg.classList.contains('open')) {
+    initVpnUI();
+    initAdblockUI();
+  }
+});
+document.addEventListener('DOMContentLoaded', () => {
+  const pg = document.getElementById('ridell-settings');
+  if (pg) _vpnObs.observe(pg, { attributes: true, attributeFilter: ['class'] });
+});
+</script>
+
+<script>
+// ── VPN SETTINGS ──────────────────────────────────────────────────
+const VPN_DESCS = {
+  none:       'No proxy — direct connection',
+  tor:        'Tor Network — requires Tor Browser or tor daemon',
+  i2p:        'I2P — requires I2P running locally on port 4444',
+  privoxy:    'Privoxy — requires Privoxy on port 8118',
+  mullvad:    'Mullvad SOCKS5 — requires Mullvad subscription',
+  windscribe: 'Windscribe SOCKS5 — requires Windscribe account',
+  custom:     'Custom proxy — enter host, port and type below',
+};
+
+function setVpnUI(enabled) {
+  const dot   = document.getElementById('vpn-status-dot');
+  const lbl   = document.getElementById('vpn-status-label');
+  const tog   = document.getElementById('vpn-toggle');
+  const sel   = document.getElementById('vpn-provider-select');
+  if (dot) { dot.style.background = enabled ? 'var(--green)' : 'var(--muted)'; dot.style.boxShadow = enabled ? '0 0 6px var(--green)' : 'none'; }
+  if (lbl) { lbl.textContent = enabled ? 'Active' : 'Off'; lbl.style.color = enabled ? 'var(--green)' : 'var(--muted)'; }
+  if (tog) tog.checked = enabled;
+}
+
+async function initVpnUI() {
+  if (!window.ipc) return;
+  const sel    = document.getElementById('vpn-provider-select');
+  const desc   = document.getElementById('vpn-provider-desc');
+  const note   = document.getElementById('vpn-note-desc');
+  const toggle = document.getElementById('vpn-toggle');
+  const customRow = document.getElementById('vpn-custom-row');
+  if (!sel) return;
+
+  const data = await window.ipc.invoke('get-vpn-state');
+  if (data) {
+    sel.value = data.active || 'none';
+    if (desc) desc.textContent = VPN_DESCS[data.active] || VPN_DESCS.none;
+    if (note) note.textContent = VPN_DESCS[data.active] || VPN_DESCS.none;
+    setVpnUI(data.enabled);
+    if (data.active === 'custom' && customRow) customRow.style.display = 'flex';
+  }
+
+  // Provider change
+  sel.addEventListener('change', async () => {
+    const key = sel.value;
+    if (desc) desc.textContent = VPN_DESCS[key] || '';
+    if (note) note.textContent = VPN_DESCS[key] || '';
+    if (customRow) customRow.style.display = key === 'custom' ? 'flex' : 'none';
+    await window.ipc.invoke('set-vpn-provider', key);
+  });
+
+  // Toggle
+  if (toggle) {
+    toggle.addEventListener('change', async () => {
+      const result = await window.ipc.invoke('toggle-vpn', toggle.checked);
+      setVpnUI(result.enabled);
+    });
+  }
+
+  // Custom proxy save
+  const saveBtn = document.getElementById('vpn-custom-save');
+  if (saveBtn) {
+    saveBtn.addEventListener('click', async () => {
+      const host = document.getElementById('vpn-custom-host').value.trim();
+      const port = document.getElementById('vpn-custom-port').value.trim();
+      const type = document.getElementById('vpn-custom-type').value;
+      if (!host || !port) return;
+      await window.ipc.invoke('set-custom-proxy', { host, port, type });
+      saveBtn.textContent = 'Saved!';
+      setTimeout(() => { saveBtn.textContent = 'Save'; }, 2000);
+    });
+  }
+}
+
+// ── AD BLOCKER UI ─────────────────────────────────────────────────
+async function initAdBlockUI() {
+  if (!window.ipc) return;
+  const toggle = document.getElementById('adb-toggle');
+  const count  = document.getElementById('adb-count');
+  if (!toggle) return;
+
+  const data = await window.ipc.invoke('get-adblocker-state');
+  if (data) {
+    toggle.checked = data.enabled;
+    if (count) count.textContent = (data.blockedCount || 0).toLocaleString() + ' blocked';
+  }
+
+  toggle.addEventListener('change', async () => {
+    await window.ipc.invoke('toggle-adblocker', toggle.checked);
+  });
+
+  // Refresh count every 5s while settings open
+  setInterval(async () => {
+    const d = await window.ipc.invoke('get-adblocker-state');
+    if (d && count) count.textContent = (d.blockedCount || 0).toLocaleString() + ' blocked';
+  }, 5000);
+}
+
+// Init when settings opens
+document.addEventListener('DOMContentLoaded', () => {
+  const obs = new MutationObserver(() => {
+    const pg = document.getElementById('ridell-settings');
+    if (pg && pg.classList.contains('open')) {
+      initVpnUI();
+      initAdBlockUI();
+    }
+  });
+  const pg = document.getElementById('ridell-settings');
+  if (pg) obs.observe(pg, { attributes: true, attributeFilter: ['class'] });
+});
+</script>
+
+<script>
+// Update VPN shield indicator in navbar
+async function updateVpnIndicator() {
+  if (!window.ipc) return;
+  const ind = document.getElementById('vpn-indicator');
+  if (!ind) return;
+  try {
+    const data = await window.ipc.invoke('get-vpn-state');
+    if (data && data.enabled) {
+      ind.style.opacity = '1';
+      ind.style.filter = 'drop-shadow(0 0 4px var(--green))';
+      ind.title = 'VPN Active: ' + (data.active || '');
+    } else {
+      ind.style.opacity = '0.3';
+      ind.style.filter = 'none';
+      ind.title = 'VPN Off — click to configure';
+    }
+  } catch(e) {}
+}
+setInterval(updateVpnIndicator, 3000);
+document.addEventListener('DOMContentLoaded', updateVpnIndicator);
+</script>
 
 </body>
 </html>
