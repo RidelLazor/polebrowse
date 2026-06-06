@@ -1,63 +1,81 @@
-name: Build PoleBrowse
+name: Build PoleBrowse CEF
 
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
-  release:
-    types: [created]
+
+env:
+  CARGO_TERM_COLOR: always
 
 jobs:
   build-linux:
-    name: Linux
+    name: Linux (x86_64)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install system deps (CEF on Linux)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgtk-3-dev libgdk-pixbuf2.0-dev libpango1.0-dev \
+            libcairo2-dev libatk1.0-dev libgdk-pixbuf-2.0-dev \
+            libx11-dev libxcomposite-dev libxdamage-dev libxrandr-dev \
+            libxtst-dev libxss-dev libdbus-1-dev libdrm-dev \
+            libgbm-dev libpulse-dev libasound2-dev
+
+      - name: Cache CEF binaries
+        uses: actions/cache@v4
         with:
-          node-version: 18
-      - name: Install system deps
-        run: sudo apt-get update && sudo apt-get install -y rpm fakeroot dpkg
-      - run: npm install
-      - name: Build Linux
-        run: npx electron-forge make --platform linux --targets @electron-forge/maker-deb,@electron-forge/maker-zip
-      - uses: actions/upload-artifact@v4
+          path: ~/.local/share/cef
+          key: ${{ runner.os }}-cef-${{ hashFiles('browser/Cargo.toml') }}
+
+      - name: Pre-download CEF binaries (optional)
+        continue-on-error: true
+        run: |
+          export CEF_PATH="$HOME/.local/share/cef"
+          mkdir -p "$CEF_PATH"
+          cargo run -p download-cef -- --dir "$CEF_PATH" 2>/dev/null || true
+
+      - name: Build
+        run: cargo build --release --manifest-path browser/Cargo.toml
+        env:
+          CEF_PATH: ${{ runner.temp }}/cef
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
         with:
           name: PoleBrowse-Linux
-          path: |
-            out/make/deb/**/*.deb
-            out/make/zip/linux/**/*.zip
+          path: browser/target/release/polebrowse
 
   build-windows:
-    name: Windows
+    name: Windows (x86_64)
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache CEF binaries
+        uses: actions/cache@v4
         with:
-          node-version: 18
-      - run: npm install
-      - name: Build Windows
-        run: npx electron-forge make --platform win32 --targets @electron-forge/maker-squirrel,@electron-forge/maker-zip
-      - uses: actions/upload-artifact@v4
+          path: ~/.local/share/cef
+          key: ${{ runner.os }}-cef-${{ hashFiles('browser/Cargo.toml') }}
+
+      - name: Build
+        run: cargo build --release --manifest-path browser/Cargo.toml
+        env:
+          CEF_PATH: ${{ runner.temp }}/cef
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
         with:
           name: PoleBrowse-Windows
-          path: |
-            out/make/squirrel.windows/**/*.exe
-            out/make/zip/win32/**/*.zip
-
-  build-mac:
-    name: macOS
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
-      - run: npm install
-      - name: Build macOS
-        run: npx electron-forge make --platform darwin --targets @electron-forge/maker-zip
-      - uses: actions/upload-artifact@v4
-        with:
-          name: PoleBrowse-macOS
-          path: out/make/zip/darwin/**/*.zip
+          path: browser/target/release/polebrowse.exe

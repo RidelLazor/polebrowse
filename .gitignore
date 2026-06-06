@@ -7,6 +7,16 @@ dist/
 .webpack/
 .cache/
 
+# Rust / Cargo
+target/
+
+# Tauri
+src-tauri/target/
+src-tauri/gen/
+
+# CEF binaries download cache
+.local/share/cef/
+
 # Generated
 src/main.dist.js
 
@@ -31,10 +41,6 @@ yarn-debug.log*
 *.swp
 *.swo
 
-# Tauri
-src-tauri/target/
-src-tauri/gen/
-
 # Keys / secrets — NEVER commit these
 *.pem
 *.key
@@ -42,35 +48,3 @@ src-tauri/gen/
 *.pfx
 *.cert
 *.cer
-node_modules/
-out/
-.webpack/
-.cache/
-*.log
-.env
-.DS_Store
-src/main.dist.js
-node_modules/
-out/
-.webpack/
-.cache/
-*.log
-.env
-.DS_Store
-src/main.dist.js
-node_modules/
-out/
-.webpack/
-.cache/
-*.log
-.env
-.DS_Store
-src/main.dist.js
-node_modules/
-out/
-.webpack/
-.cache/
-*.log
-.env
-.DS_Store
-src/main.dist.js

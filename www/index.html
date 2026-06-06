@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PoleBrowse</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #1a1a2e;
+  --surface: #16213e;
+  --surface2: #0f3460;
+  --accent: #e94560;
+  --text: #e0e0e0;
+  --text-dim: #888;
+  --border: #2a2a4a;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+body {
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+/* ── Title Bar ── */
+#titlebar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  -webkit-app-region: no-drag;
+}
+#titlebar .logo {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--accent);
+  margin-right: 4px;
+}
+.tb-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .15s;
+}
+.tb-btn:hover { background: var(--surface2); color: var(--text); }
+.tb-btn:active { transform: scale(.92); }
+.tb-btn.accent { color: var(--accent); }
+
+/* ── URL Bar ── */
+#urlbar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0 12px;
+  margin: 0 4px;
+  height: 32px;
+}
+#urlbar input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+  padding: 0 4px;
+}
+#urlbar input::placeholder { color: var(--text-dim); }
+#urlbar .site-icon {
+  width: 16px; height: 16px;
+  margin-right: 8px;
+  background: var(--surface2);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Tab Bar ── */
+#tabbar {
+  display: flex;
+  align-items: center;
+  background: var(--surface);
+  padding: 4px 8px 0;
+  gap: 2px;
+  overflow-x: auto;
+  min-height: 34px;
+}
+#tabbar::-webkit-scrollbar { height: 2px; }
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  font-size: 12px;
+  color: var(--text-dim);
+  cursor: pointer;
+  min-width: 120px;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: all .15s;
+  position: relative;
+}
+.tab:hover { color: var(--text); background: var(--surface2); }
+.tab.active {
+  background: var(--bg);
+  color: var(--text);
+  border-color: var(--border);
+}
+.tab .close {
+  margin-left: auto;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  opacity: 0;
+  transition: opacity .15s;
+  border: none;
+  background: none;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.tab:hover .close { opacity: .6; }
+.tab .close:hover { opacity: 1; background: rgba(255,60,60,.3); color: var(--accent); }
+#newtab {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all .15s;
+}
+#newtab:hover { background: var(--surface2); color: var(--text); }
+
+/* ── Content Area ── */
+#content {
+  flex: 1;
+  position: relative;
+  background: #fff;
+}
+#content iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+#statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 12px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+</style>
+</head>
+<body>
+
+<div id="titlebar">
+  <span class="logo">⛓</span>
+  <button class="tb-btn" id="btn-back" title="Back">◀</button>
+  <button class="tb-btn" id="btn-fwd" title="Forward">▶</button>
+  <button class="tb-btn" id="btn-reload" title="Reload">⟳</button>
+  <div id="urlbar">
+    <span class="site-icon" id="site-icon"></span>
+    <input type="text" id="url-input" placeholder="Search or enter URL…" spellcheck="false">
+  </div>
+  <button class="tb-btn" id="btn-menu" title="Menu">⋮</button>
+</div>
+
+<div id="tabbar">
+  <div class="tab active" data-id="1">
+    <span>New Tab</span>
+    <button class="close">✕</button>
+  </div>
+  <button id="newtab" title="New tab">+</button>
+</div>
+
+<div id="content">
+  <iframe id="webview" src="about:blank"></iframe>
+</div>
+
+<div id="statusbar">
+  <span id="status-text">Ready</span>
+  <span id="url-display"></span>
+</div>
+
+<script>
+// ── IPC bridge to Rust backend via CEF V8 ──
+// window.__polebrowse is populated by CEF's V8 handler
+const pb = window.__polebrowse || {};
+
+// ── DOM refs ──
+const urlInput = document.getElementById('url-input');
+const webview = document.getElementById('webview');
+const statusText = document.getElementById('status-text');
+const urlDisplay = document.getElementById('url-display');
+
+// ── Navigation ──
+document.getElementById('btn-back').onclick = () => pb.goBack?.();
+document.getElementById('btn-fwd').onclick = () => pb.goForward?.();
+document.getElementById('btn-reload').onclick = () => pb.reload?.();
+
+urlInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    let url = urlInput.value.trim();
+    if (!url) return;
+    if (!/^[a-zA-Z]+:\/\//.test(url)) url = 'https://' + url;
+    pb.navigate?.(url);
+    urlInput.blur();
+  }
+});
+
+// ── New Tab ──
+document.getElementById('newtab').onclick = () => pb.newTab?.();
+
+// ── Tab click / close ──
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.onclick = () => pb.switchTab?.(tab.dataset.id);
+  tab.querySelector('.close').onclick = (e) => {
+    e.stopPropagation();
+    pb.closeTab?.(tab.dataset.id);
+  };
+});
+
+// ── Status updates from Rust ──
+pb.onStatusUpdate = (msg) => { statusText.textContent = msg; };
+pb.onUrlChange = (url) => { urlDisplay.textContent = url; urlInput.value = url; };
+pb.onTitleChange = (title) => { document.title = title; };
+
+console.log('[polebrowse] chrome UI ready');
+</script>
+</body>
+</html>
