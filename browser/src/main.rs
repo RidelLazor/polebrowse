@@ -10,11 +10,12 @@ use cef::*;
 /// Set by build.rs via `cargo::rustc-env`; falls back to Resources/ next to the executable.
 fn cef_resources_dir() -> PathBuf {
     if let Some(dir) = option_env!("CEF_RESOURCES_DIR") {
-        if !dir.is_empty() {
-            return PathBuf::from(dir);
+        let p = PathBuf::from(dir);
+        if p.exists() {
+            return p;
         }
+        eprintln!("[polebrowse] embedded CEF_RESOURCES_DIR={} does not exist, falling back", dir);
     }
-    // Fall back to Resources/ next to the executable
     let exe = std::env::current_exe().ok();
     if let Some(dir) = exe.as_ref().and_then(|p| p.parent()) {
         let resources = dir.join("Resources");
