@@ -15,7 +15,7 @@ wrap_load_handler! {
             let Some(main_frame) = browser.main_frame() else { return };
 
             if let Ok(js) = render::chrome_script() {
-                let code = CefString::from(&js);
+                let code = CefString::from(js.as_str());
                 main_frame.execute_java_script(Some(&code), None, 0);
             }
         }
