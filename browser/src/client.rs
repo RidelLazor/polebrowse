@@ -7,15 +7,16 @@ wrap_load_handler! {
 
     impl LoadHandler {
         fn on_load_end(&self,
-            browser: Option<&Browser>,
-            _frame: Option<&Frame>,
+            browser: Option<&mut Browser>,
+            _frame: Option<&mut Frame>,
             _http_code: i32,
         ) {
             let Some(browser) = browser else { return };
             let Some(main_frame) = browser.main_frame() else { return };
 
             if let Ok(js) = render::chrome_script() {
-                main_frame.execute_java_script(Some(&js), None, 0);
+                let code = CefString::from(&js);
+                main_frame.execute_java_script(Some(&code), None, 0);
             }
         }
     }
@@ -27,13 +28,13 @@ wrap_client! {
 
     impl Client {
         fn load_handler(&self) -> Option<LoadHandler> {
-            Some(PolebrowseLoadHandler)
+            Some(PolebrowseLoadHandler::new())
         }
     }
 }
 
 impl PolebrowseClient {
     pub fn new_client() -> Client {
-        PolebrowseClient
+        PolebrowseClient::new()
     }
 }

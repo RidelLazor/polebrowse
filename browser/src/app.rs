@@ -10,7 +10,7 @@ wrap_browser_process_handler! {
         fn on_context_initialized(&self) {
             eprintln!("[polebrowse] context initialized");
 
-            let client = PolebrowseClient;
+            let mut client = PolebrowseClient::new();
             let url = CefString::from("https://www.google.com/");
             let window_info = WindowInfo {
                 ..Default::default()
@@ -18,7 +18,7 @@ wrap_browser_process_handler! {
 
             browser_host_create_browser(
                 Some(&window_info),
-                Some(&client),
+                Some(&mut client),
                 Some(&url),
                 None, None, None,
             );
@@ -26,7 +26,7 @@ wrap_browser_process_handler! {
         }
 
         fn default_client(&self) -> Option<Client> {
-            Some(PolebrowseClient)
+            Some(PolebrowseClient::new())
         }
     }
 }
@@ -37,7 +37,7 @@ wrap_app! {
 
     impl App {
         fn browser_process_handler(&self) -> Option<BrowserProcessHandler> {
-            Some(BrowserProcHandler)
+            Some(BrowserProcHandler::new())
         }
     }
 }

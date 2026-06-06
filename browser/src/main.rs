@@ -20,7 +20,7 @@ fn main() -> Result<(), &'static str> {
 
     assert_eq!(ret, -1, "expected browser process");
 
-    let mut app = app::PolebrowseApp;
+    let mut app = app::PolebrowseApp::new();
 
     let settings = Settings {
         no_sandbox: 1,
