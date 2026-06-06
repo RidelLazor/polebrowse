@@ -106,16 +106,7 @@ body.light .panel-header {
 body.light .side-panel {
   background:var(--bg);
 }
-body.light #extensions-page {
-  background:var(--bg);
-}
-body.light .ext-card {
-  background:var(--l1);
-  border-color:var(--border);
-}
-body.light .ext-card:hover {
-  border-color:var(--accent);
-}
+
 body.light .settings-section {
   background:var(--l1);
   border-color:var(--border);
@@ -370,48 +361,7 @@ html,body { width:100%;height:100%;overflow:hidden;background:var(--bg);color:va
 #dl-clear { padding:5px 12px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--red);font-size:11px;font-family:var(--ff);cursor:pointer;transition:all .12s; }
 #dl-clear:hover { background:var(--red);color:#fff; }
 
-/* EXTENSIONS PAGE */
-#extensions-page { display:none;flex-direction:column;flex:1;min-height:0;background:var(--bg); }
-#extensions-page.open { display:flex; }
-#ext-header { display:flex;align-items:center;padding:20px 28px 0;gap:16px;flex-shrink:0; }
-#ext-header h2 { font-size:20px;font-weight:600; }
-#ext-search-wrap { flex:1;max-width:400px;position:relative; }
-#ext-search { width:100%;height:34px;background:var(--l2);border:1px solid var(--border);border-radius:9px;color:var(--text);font-family:var(--ff);font-size:13px;padding:0 12px;outline:none;transition:border-color .15s; }
-#ext-search:focus { border-color:var(--accent); }
-#ext-search::placeholder { color:var(--muted); }
-#ext-tabs { display:flex;gap:4px;padding:16px 28px 0;flex-shrink:0;border-bottom:1px solid var(--border); }
-#btn-load-unpacked,#btn-open-cws { height:32px;padding:0 14px;border-radius:8px;border:1px solid var(--border2);background:var(--l2);color:var(--text);font-size:12px;font-family:var(--ff);cursor:pointer;white-space:nowrap;transition:background .12s; }
-#btn-load-unpacked:hover,#btn-open-cws:hover { background:var(--l3); }
-#btn-open-cws { border-color:rgba(91,138,245,.4);color:var(--accent); }
-.ext-tab { padding:8px 16px;border-radius:8px 8px 0 0;border:none;background:transparent;color:var(--muted);font-size:13px;font-family:var(--ff);cursor:pointer;transition:all .12s;border-bottom:2px solid transparent; }
-.ext-tab.active { color:var(--accent);border-bottom-color:var(--accent); }
-.ext-tab:hover:not(.active) { color:var(--text); }
-#ext-body { flex:1;overflow-y:auto;padding:20px 28px; }
-#ext-body::-webkit-scrollbar { width:4px; }
-#ext-body::-webkit-scrollbar-thumb { background:var(--border2);border-radius:4px; }
-#ext-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px; }
-.ext-card { background:var(--l1);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;transition:border-color .15s; }
-.ext-card:hover { border-color:var(--border2); }
-.ext-card-top { display:flex;gap:12px;align-items:flex-start; }
-.ext-img { width:48px;height:48px;border-radius:10px;background:var(--l2);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;overflow:hidden; }
-.ext-img img { width:100%;height:100%;object-fit:cover;border-radius:10px; }
-.ext-meta { flex:1;min-width:0; }
-.ext-name { font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
-.ext-author { font-size:11px;color:var(--muted);margin-top:2px; }
-.ext-stats { display:flex;gap:8px;margin-top:4px; }
-.ext-stat { font-size:10px;color:var(--muted);display:flex;align-items:center;gap:3px; }
-.ext-desc { font-size:11.5px;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden; }
-.ext-actions { display:flex;gap:8px;align-items:center; }
-.ext-install-btn { flex:1;height:30px;border-radius:7px;border:none;background:var(--accent);color:#fff;font-size:12px;font-family:var(--ff);font-weight:500;cursor:pointer;transition:background .12s;display:flex;align-items:center;justify-content:center;gap:6px; }
-.ext-install-btn:hover { background:var(--accent2); }
-.ext-install-btn.installed { background:var(--l3);color:var(--muted);border:1px solid var(--border2); }
-.ext-install-btn.installed:hover { background:var(--red);color:#fff;border-color:var(--red); }
-.ext-install-btn.installing { background:var(--l3);color:var(--muted);cursor:default; }
-.ext-install-btn:disabled { opacity:.5;cursor:default; }
-.ext-toast { position:fixed;bottom:24px;right:24px;background:var(--l2);border:1px solid var(--border2);border-radius:10px;padding:12px 18px;font-size:13px;color:var(--text);z-index:999;display:none;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.4); }
-.ext-toast.show { display:flex; }
-.ext-toast.success { border-color:var(--green);color:var(--green); }
-.ext-toast.error { border-color:var(--red);color:var(--red); }
+
 /* 3-DOT MENU */
 #dotmenu { position:fixed;top:88px;right:10px;z-index:99998;background:var(--l2);border:1px solid var(--border2);border-radius:12px;padding:6px;width:290px;box-shadow:0 8px 40px rgba(0,0,0,.6);display:none;flex-direction:column;gap:1px;font-size:13px;font-family:var(--ff); }
 #dotmenu.show { display:flex; }
@@ -526,7 +476,6 @@ html,body { width:100%;height:100%;overflow:hidden;background:var(--bg);color:va
     <button class="nbtn" id="btn-downloads" title="Downloads">⬇</button>
     <div id="dl-badge-count"></div>
   </div>
-  <button class="nbtn" id="btn-extensions" title="Extensions">🧩</button>
   <button class="nbtn" id="btn-devtools" title="DevTools">⚙</button>
   <button class="nbtn" id="btn-dotmenu" title="Menu">⋮</button>
 </div>
@@ -585,29 +534,6 @@ html,body { width:100%;height:100%;overflow:hidden;background:var(--bg);color:va
   <div class="panel-body" id="downloads-list"></div>
 </div>
 
-<!-- EXTENSIONS PAGE -->
-<div id="extensions-page">
-  <div id="ext-header">
-    <h2>🧩 Extensions</h2>
-    <div id="ext-search-wrap">
-      <input id="ext-search" type="text" placeholder="Search extensions..." spellcheck="false"/>
-    </div>
-    <button id="btn-load-unpacked" title="Load a local extension folder">📂 Load Unpacked</button>
-    <button id="btn-open-cws" title="Open Chrome Web Store">🌐 Web Store</button>
-    <button class="panel-close" id="ext-close">✕</button>
-  </div>
-  <div id="ext-tabs">
-    <button class="ext-tab active" data-tab="featured">Featured</button>
-    <button class="ext-tab" data-tab="productivity">Productivity</button>
-    <button class="ext-tab" data-tab="privacy">Privacy</button>
-    <button class="ext-tab" data-tab="devtools">Dev Tools</button>
-    <button class="ext-tab" data-tab="installed">Installed</button>
-  </div>
-  <div id="ext-body">
-    <div id="ext-grid"></div>
-  </div>
-</div>
-
 <!-- RIDELL INTERNAL PAGES -->
 <div class="ridell-page" id="ridell-downloads">
   <div class="rp-header">
@@ -624,16 +550,6 @@ html,body { width:100%;height:100%;overflow:hidden;background:var(--bg);color:va
     <button class="rp-action-btn" id="rp-hist-clear">🗑 Clear All</button>
   </div>
   <div class="rp-body" id="rp-hist-body"></div>
-</div>
-
-<div class="ridell-page" id="ridell-extensions">
-  <div class="rp-header">
-    <div class="rp-title">🧩 Extensions</div>
-    <div class="rp-url">ridell://extensions</div>
-  </div>
-  <div class="rp-body" id="rp-ext-body">
-    <!-- reuse existing extensions page content by moving it here on open -->
-  </div>
 </div>
 
 <div class="ridell-page" id="ridell-settings">
@@ -940,7 +856,6 @@ html,body { width:100%;height:100%;overflow:hidden;background:var(--bg);color:va
     <div class="dm-item dm-item-arrow" id="dm-history"><span class="dm-icon">🕐</span><span class="dm-label">History</span><span class="dm-shortcut"></span><span class="dm-arrow">›</span></div>
     <div class="dm-item dm-item-arrow" id="dm-downloads"><span class="dm-icon">⬇</span><span class="dm-label">Downloads</span><span class="dm-shortcut">Ctrl+J</span><span class="dm-arrow">›</span></div>
     <div class="dm-item dm-item-arrow" id="dm-bookmarks"><span class="dm-icon">★</span><span class="dm-label">Bookmarks</span><span class="dm-shortcut"></span><span class="dm-arrow">›</span></div>
-    <div class="dm-item dm-item-arrow" id="dm-extensions-link"><span class="dm-icon">🧩</span><span class="dm-label">Extensions</span><span class="dm-shortcut"></span><span class="dm-arrow">›</span></div>
   </div>
   <div class="dm-sep"></div>
   <div class="dm-section">
@@ -998,38 +913,172 @@ html,body { width:100%;height:100%;overflow:hidden;background:var(--bg);color:va
   <div class="ctx-item" id="ctx-inspect"><span class="ctx-label">🔧 Inspect</span></div>
 </div>
 
-<!-- TOAST -->
-<div class="ext-toast" id="ext-toast"></div>
-
 <script>
+// ══════════════════════════════════════════════════════════════════
+// Tauri IPC Shim — replaces Electron contextBridge for Tauri v2
+// ══════════════════════════════════════════════════════════════════
+(function() {
+  const TAURI = window.__TAURI__;
+  if (!TAURI) {
+    console.warn('Tauri API not available, running in browser mode');
+    window.ipc = {
+      send: function(ch, d) { console.log('[IPC send]', ch, d); },
+      on: function(ch, cb) { console.log('[IPC on]', ch); },
+      invoke: function(ch, d) { console.log('[IPC invoke]', ch, d); return Promise.resolve({}); },
+    };
+    return;
+  }
+
+  const invoke = TAURI.core.invoke;
+  const listen = TAURI.event.listen;
+  const win = TAURI.window.getCurrentWindow();
+
+  // ── Command map: Electron channel → Tauri command ──────────
+  const CMD_MAP = {
+    // DNS
+    'get-dns-providers':   'get_dns_providers',
+    'set-dns-provider':    'set_dns_provider',
+    'toggle-dns':          'toggle_dns',
+    'test-dns':            'test_dns',
+    // VPN
+    'get-vpn-state':       'get_vpn_state',
+    'set-vpn-provider':    'set_vpn_provider',
+    'toggle-vpn':          'toggle_vpn',
+    'set-custom-proxy':    'set_custom_proxy',
+    'test-vpn':            'test_proxy',
+    'test-proxy':          'test_proxy',
+    // Adblock
+    'get-adblocker-state': 'get_adblock_state',
+    'get-adblock-state':   'get_adblock_state',
+    'toggle-adblocker':    'toggle_adblock',
+    'toggle-adblock':      'toggle_adblock',
+    // Autocomplete
+    'autocomplete':        'autocomplete',
+    // Import
+    'import-list-browsers':'import_list_browsers',
+    'import-browser-data': 'import_browser_data',
+  };
+
+  // ── One-way command handlers (no return value expected) ─────
+  const SEND_HANDLERS = {
+    'view-hide': function() { /* Tauri doesn't need view hide */ },
+    'view-show': function() { },
+    'win-fullscreen': async function() {
+      const fs = await win.isFullscreen();
+      await win.setFullscreen(!fs);
+    },
+  };
+
+  // ── Event map: Electron channel → Tauri event name ─────────
+  const EVENT_MAP = {
+    'view-event':        'view-event',
+    'view-contextmenu':  'view-contextmenu',
+    'download-start':    'download-start',
+    'download-update':   'download-update',
+    'download-done':     'download-done',
+    'proto-launch-request': 'proto-launch-request',
+    'open-url-on-start': 'open-url-on-start',
+    'receive-tab':       'receive-tab',
+    'check-default-browser': 'check-default-browser',
+    'site-dangerous':    'site-dangerous',
+    'page-load-error':   'page-load-error',
+  };
+
+  // ── Build ipc shim ─────────────────────────────────────────
+  var listeners = {};
+  window.ipc = {
+    send: function(channel, data) {
+      if (SEND_HANDLERS[channel]) {
+        SEND_HANDLERS[channel](data);
+        return;
+      }
+      // For window controls, use Tauri window API directly
+      if (channel === 'win-min') { win.minimize(); return; }
+      if (channel === 'win-max') { win.toggleMaximize(); return; }
+      if (channel === 'win-close') { win.close(); return; }
+      if (channel === 'open-devtools') { /* Tauri has its own devtools via menu */ return; }
+      if (channel === 'new-window') { /* Skip - Tauri creates windows differently */ return; }
+      if (channel === 'view-navigate' || channel === 'view-back' || channel === 'view-fwd' || channel === 'view-reload') {
+        // These are handled by the frontend navigating the webview directly
+        return;
+      }
+      if (channel === 'view-zoom') {
+        if (data && data.factor) {
+          TAURI.webview.getCurrentWebview().setZoom(data.factor).catch(function(){});
+        }
+        return;
+      }
+      if (channel === 'ctx-action') {
+        // Handled by the frontend
+        return;
+      }
+      if (channel === 'detach-tab') {
+        // Skip - no multi-window tab detach in Tauri version
+        return;
+      }
+      if (channel === 'view-destroy') { return; }
+      if (channel === 'view-find') { return; }
+      if (channel === 'setting-change') { return; }
+      if (channel === 'proto-open-external') {
+        if (data && data.url) {
+          TAURI.plugin && TAURI.plugin.opener && TAURI.plugin.opener.openUrl(data.url).catch(function(){});
+        }
+        return;
+      }
+      if (channel === 'open-file') {
+        if (data && data.path) {
+          TAURI.plugin && TAURI.plugin.opener && TAURI.plugin.opener.openPath(data.path).catch(function(){});
+        }
+        return;
+      }
+      if (channel === 'show-file') {
+        if (data && data.path) {
+          TAURI.plugin && TAURI.plugin.opener && TAURI.plugin.opener.showItemInFolder && TAURI.plugin.opener.showItemInFolder(data.path).catch(function(){});
+        }
+        return;
+      }
+      // Unknown send channel — log it
+      console.log('[ipc] unhandled send:', channel, data);
+    },
+    on: function(channel, cb) {
+      var eventName = EVENT_MAP[channel];
+      if (!eventName) {
+        console.log('[ipc] unhandled on:', channel);
+        return;
+      }
+      if (!listeners[channel]) {
+        listeners[channel] = [];
+        listen(eventName, function(event) {
+          var payload = event.payload;
+          (listeners[channel] || []).forEach(function(fn) { fn(payload); });
+        });
+      }
+      listeners[channel].push(cb);
+    },
+    invoke: function(channel, data) {
+      var cmd = CMD_MAP[channel];
+      if (!cmd) {
+        // Handle special cases
+        if (channel === 'default-browser-status') {
+          return Promise.resolve({ isDefault: false, isWindows: false });
+        }
+        if (channel === 'set-default-browser') {
+          return Promise.resolve({ ok: false, reason: 'Not supported in this build' });
+        }
+        if (channel === 'import-pick-folder') {
+          return Promise.resolve(null);
+        }
+        console.log('[ipc] unhandled invoke:', channel, data);
+        return Promise.reject(new Error('Unknown IPC channel: ' + channel));
+      }
+      return invoke(cmd, data || {});
+    }
+  };
+})();
+
 'use strict';
 
-// ── CURATED EXTENSIONS DB
-// Each entry: { id, name, author, description, icon, rating, users, category }
-const EXT_DB = [
-  // Featured
-  { id:'cjpalhdlnbpafiamejdnhcphjbkeiagm', name:'uBlock Origin', author:'Raymond Hill', description:'Finally, an efficient wide-spectrum content blocker. Easy on CPU and memory.', icon:'🛡️', rating:'4.8', users:'10M+', category:['featured','privacy'] },
-  { id:'chklaanhfefbnpoihckbnefhakgolnmc', name:'SponsorBlock', author:'ajayyy', description:'Skip sponsors, intros, outros, and more on YouTube automatically.', icon:'⏭️', rating:'4.9', users:'3M+', category:['featured','productivity'] },
-  { id:'nkbihfbeogaeaoehlefnkodbefgpgknn', name:'MetaMask', author:'MetaMask', description:'Ethereum browser extension for crypto wallets and Web3 apps.', icon:'🦊', rating:'4.5', users:'5M+', category:['featured'] },
-  { id:'hdokiejnpimakedhajhdlcegeplioahd', name:'LastPass', author:'LastPass', description:'Secure password manager with autofill and password generator.', icon:'🔑', rating:'4.3', users:'7M+', category:['featured','privacy'] },
-  // Productivity
-  { id:'gighmmpiobklfepjocnamgkkbiglidom', name:'AdBlock', author:'AdBlock', description:'Block ads and pop-ups on YouTube, Facebook, and all other websites.', icon:'🚫', rating:'4.6', users:'40M+', category:['productivity','privacy'] },
-  { id:'dbepggeogbaibhgnhhndojpepiihcmeb', name:'Vimium', author:'Phil Crosby', description:'Provides keyboard shortcuts for navigation and control in the spirit of Vim.', icon:'⌨️', rating:'4.8', users:'1M+', category:['productivity'] },
-  { id:'eimadpbcbfnmbkopoojfekhnkhdbieeh', name:'Dark Reader', author:'Dark Reader', description:'Dark mode for every website. Take care of your eyes, use dark theme for night and daily browsing.', icon:'🌙', rating:'4.7', users:'5M+', category:['productivity','featured'] },
-  { id:'fmkadmapgofadopljbjfkapdkoienihi', name:'React DevTools', author:'Facebook', description:'Adds React debugging tools to the Chrome Developer Tools.', icon:'⚛️', rating:'4.7', users:'3M+', category:['devtools'] },
-  // Privacy
-  { id:'pkehgijcmpdhfbdbbnkijodmdjhbjlgp', name:'Privacy Badger', author:'EFF', description:'Privacy Badger automatically learns to block invisible trackers.', icon:'🦡', rating:'4.5', users:'1M+', category:['privacy'] },
-  { id:'gcbommkclmclpchllfjekcdonpmejbdp', name:'HTTPS Everywhere', author:'EFF', description:'Encrypt the web! Automatically use HTTPS security on many sites.', icon:'🔒', rating:'4.6', users:'2M+', category:['privacy'] },
-  { id:'ookhnhpkphagefgdiemllfajmkdkcaim', name:'Cookie AutoDelete', author:'Kenny Do', description:'Automatically deletes unused cookies from your closed tabs.', icon:'🍪', rating:'4.5', users:'500K+', category:['privacy'] },
-  // Dev Tools
-  { id:'bfbameneiokkgbdmiekhjnmfkcnldhhm', name:'Web Developer', author:'Chris Pederick', description:'Adds a toolbar button with various web developer tools.', icon:'🛠️', rating:'4.5', users:'1M+', category:['devtools'] },
-  { id:'ienfalfjdbdpebioblfackkekamfmbnh', name:'JSON Formatter', author:'Callum Locke', description:'Makes JSON easy to read. Open source.', icon:'📋', rating:'4.7', users:'1M+', category:['devtools'] },
-  { id:'hgmloofddffdnphfgcellkdfbfbjeloo', name:'ColorZilla', author:'ColorZilla', description:'Advanced Eyedropper, Color Picker, Gradient Generator and other colorful goodies.', icon:'🎨', rating:'4.6', users:'3M+', category:['devtools'] },
-];
 
-let installedIds = new Set();
-let currentTab = 'featured';
-let searchQuery = '';
 
 // ── STATE
 let tabs = [], activeId = null, tid = 0;
@@ -1093,18 +1142,26 @@ function progEnd() {
 
 // ── TOAST
 function showToast(msg, type = 'success') {
-  const t = document.getElementById('ext-toast');
-  const prefix = type === 'success' ? '✓ ' : type === 'error' ? '✕ ' : '⏳ ';
+  let t = document.getElementById('pb-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'pb-toast';
+    t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:var(--l2);border:1px solid var(--border2);border-radius:10px;padding:12px 18px;font-size:13px;color:var(--text);z-index:999;display:none;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.4);';
+    document.body.appendChild(t);
+  }
+  const prefix = type === 'success' ? '✓ ' : type === 'error' ? '✕ ' : '';
   t.textContent = prefix + msg;
-  t.className = `ext-toast show ${type}`;
-  setTimeout(() => t.classList.remove('show'), 3500);
+  t.style.display = 'flex';
+  t.style.borderColor = type === 'success' ? 'var(--green)' : type === 'error' ? 'var(--red)' : 'var(--border2)';
+  t.style.color = type === 'success' ? 'var(--green)' : type === 'error' ? 'var(--red)' : 'var(--text)';
+  clearTimeout(t._hide);
+  t._hide = setTimeout(() => { t.style.display = 'none'; }, 3500);
 }
 
 // ── PANELS
 function closeAllPanels() {
   document.getElementById('history-panel').classList.remove('open');
   document.getElementById('downloads-panel').classList.remove('open');
-  document.getElementById('extensions-page').classList.remove('open');
   document.querySelectorAll('.nbtn').forEach(b => b.classList.remove('active-panel'));
 }
 
@@ -1122,154 +1179,10 @@ function togglePanel(panelId, btnId) {
   }
 }
 
-// ── EXTENSIONS
-async function loadInstalledList() {
-  const list = await window.ipc.invoke('ext-list-installed');
-  installedIds = new Set(list.map(e => e.id));
-}
 
-function renderExtensions() {
-  const grid = document.getElementById('ext-grid');
-  let items;
-
-  if (currentTab === 'installed') {
-    items = EXT_DB.filter(e => installedIds.has(e.id));
-    if (items.length === 0) {
-      grid.innerHTML = '<div class="panel-empty" style="margin-top:60px;font-size:14px;">No extensions installed yet.<br><span style="font-size:12px;margin-top:8px;display:block;">Browse the other tabs to find extensions.</span></div>';
-      return;
-    }
-  } else {
-    items = EXT_DB.filter(e => e.category.includes(currentTab));
-  }
-
-  if (searchQuery) {
-    const q = searchQuery.toLowerCase();
-    items = EXT_DB.filter(e => e.name.toLowerCase().includes(q) || e.description.toLowerCase().includes(q));
-  }
-
-  grid.innerHTML = items.map(ext => {
-    const installed = installedIds.has(ext.id);
-    return `
-      <div class="ext-card">
-        <div class="ext-card-top">
-          <div class="ext-img">${ext.icon}</div>
-          <div class="ext-meta">
-            <div class="ext-name">${ext.name}</div>
-            <div class="ext-author">${ext.author}</div>
-            <div class="ext-stats">
-              <div class="ext-stat">⭐ ${ext.rating}</div>
-              <div class="ext-stat">👥 ${ext.users}</div>
-            </div>
-          </div>
-        </div>
-        <div class="ext-desc">${ext.description}</div>
-        <div class="ext-actions">
-          <button class="ext-install-btn ${installed ? 'installed' : ''}" data-id="${ext.id}" data-name="${ext.name}" data-installed="${installed}">
-            ${installed ? '✓ Remove' : '⬇ Install'}
-          </button>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  grid.querySelectorAll('.ext-install-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const id = btn.dataset.id;
-      const name = btn.dataset.name;
-      const installed = btn.dataset.installed === 'true';
-
-      if (installed) {
-        btn.textContent = 'Removing...';
-        btn.disabled = true;
-        try {
-          await window.ipc.invoke('ext-uninstall', { extId: id });
-          installedIds.delete(id);
-          showToast(`${name} removed`, 'success');
-          renderExtensions();
-        } catch (err) {
-          showToast(`Failed: ${err.message}`, 'error');
-          btn.disabled = false;
-        }
-      } else {
-        btn.textContent = '⏳ Installing...';
-        btn.classList.add('installing');
-        btn.disabled = true;
-        try {
-          await window.ipc.invoke('ext-install', { extId: id });
-          installedIds.add(id);
-          showToast(`${name} installed! Restart to apply.`, 'success');
-          renderExtensions();
-        } catch (err) {
-          showToast(`Failed: ${err.message}`, 'error');
-          btn.disabled = false;
-          btn.classList.remove('installing');
-          btn.textContent = '⬇ Install';
-        }
-      }
-    });
-  });
-}
 
 // Wire buttons after DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-  // ── PANEL & MISC BINDINGS (moved from top-level)
-  document.getElementById('btn-extensions').onclick = async () => {
-    const page = document.getElementById('extensions-page');
-    const isOpen = page.classList.contains('open');
-    closeAllPanels();
-    window.ipc.send('view-hide');
-    document.getElementById('homepage').style.display = 'none';
-    if (!isOpen) {
-      page.classList.add('open');
-      document.getElementById('btn-extensions').classList.add('active-panel');
-      await loadInstalledList();
-      renderExtensions();
-    } else {
-      showActiveTab();
-    }
-  };
-
-  document.getElementById('ext-close').onclick = () => { closeAllPanels(); showActiveTab(); };
-
-  document.getElementById('btn-load-unpacked').onclick = async () => {
-    const result = await window.ipc.invoke('ext-load-unpacked');
-    if (result && result.canceled) return;
-    if (result && result.success) {
-      showToast(`✓ "${result.name}" loaded`, 'success');
-      await loadInstalledList();
-      currentTab = 'installed';
-      document.querySelectorAll('.ext-tab').forEach(t => t.classList.remove('active'));
-      document.querySelector('.ext-tab[data-tab="installed"]').classList.add('active');
-      renderExtensions();
-    } else if (result && result.error) {
-      showToast(`Failed: ${result.error}`, 'error');
-    }
-  };
-
-  document.getElementById('btn-open-cws').onclick = () => {
-    closeAllPanels();
-    newTab('https://chromewebstore.google.com/');
-  };
-
-  document.querySelectorAll('.ext-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.ext-tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      currentTab = tab.dataset.tab;
-      searchQuery = '';
-      document.getElementById('ext-search').value = '';
-      renderExtensions();
-    });
-  });
-
-  document.getElementById('ext-search').addEventListener('input', e => {
-    searchQuery = e.target.value;
-    if (searchQuery) {
-      document.querySelectorAll('.ext-tab').forEach(t => t.classList.remove('active'));
-    }
-    renderExtensions();
-  });
-
   // ── HISTORY
   function addHist(url, title) {
     hist.unshift({ url, title: title || url, time: Date.now() });
@@ -1397,27 +1310,6 @@ document.addEventListener('DOMContentLoaded', function() {
     ghost.style.top = e.clientY + 8 + 'px';
   }
 
-  // ── EXT STATUS from CWS installs (also used by built-in store)
-  window.ipc.on('ext-status', (data) => {
-    const msgs = {
-      downloading: '⬇ Downloading extension...',
-      extracting: '📦 Extracting...',
-      loading: '⚙ Loading extension...',
-      installed: '✓ Installed! Active immediately.',
-      already: '✓ Already installed',
-      error: '✕ ' + (data.message || 'Install failed'),
-    };
-    const msg = msgs[data.status];
-    if (!msg) return;
-    const isErr = data.status === 'error';
-    const isDone = data.status === 'installed' || data.status === 'already';
-    showToast(msg.slice(2), isDone ? 'success' : isErr ? 'error' : 'info');
-    // Refresh installed list if on extensions page
-    if (document.getElementById('extensions-page').classList.contains('open')) {
-      loadInstalledList().then(() => renderExtensions());
-    }
-  });
-
   // ── OPEN URL ON START (for detached windows)
   // ── EXTERNAL PROTOCOL POPUP ─────────────────────────────────────────────────
   (function() {
@@ -1465,7 +1357,7 @@ document.addEventListener('DOMContentLoaded', function() {
     newTab(data.url);
   });
   function closeAllRidellPages() {
-    ['ridell-downloads','ridell-history','ridell-extensions','ridell-settings','ridell-no-internet','ridell-dangerous'].forEach(id => {
+    ['ridell-downloads','ridell-history','ridell-settings','ridell-no-internet','ridell-dangerous'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.classList.remove('open');
     });
@@ -1478,7 +1370,6 @@ document.addEventListener('DOMContentLoaded', function() {
     el.classList.add('open');
     if (page === 'history') renderHist();
     if (page === 'downloads') renderDownloads();
-    if (page === 'extensions') { loadInstalledList().then(() => renderExtensions()); }
     if (page === 'settings') renderSettings();
   }
 
@@ -1575,7 +1466,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (url.startsWith('ridell://')) {
       const page = url.replace('ridell://', '').replace(/\/$/, '');
       tab.url = url;
-      tab.title = ({ downloads:'Downloads', history:'History', extensions:'Extensions', settings:'Settings' })[page] || page;
+      tab.title = ({ downloads:'Downloads', history:'History', settings:'Settings' })[page] || page;
       if (id === activeId) {
         document.getElementById('urlbar').value = url;
         document.getElementById('homepage').style.display = 'none';
@@ -1943,7 +1834,6 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('dm-history').onclick = () => { hideDotMenu(); newTab('ridell://history'); };
   document.getElementById('dm-downloads').onclick = () => { hideDotMenu(); newTab('ridell://downloads'); };
   document.getElementById('dm-bookmarks').onclick = () => { hideDotMenu(); showToast('Bookmarks bar is always visible below the navbar', 'info'); };
-  document.getElementById('dm-extensions-link').onclick = () => { hideDotMenu(); newTab('ridell://extensions'); };
   document.getElementById('dm-print').onclick = () => { hideDotMenu(); window.ipc.send('ctx-action', { action: 'print', tabId: activeId }); };
   document.getElementById('dm-find').onclick = () => { hideDotMenu(); window.ipc.send('view-find', { tabId: activeId }); };
   document.getElementById('dm-newtab-dm').onclick = () => { hideDotMenu(); newTab(null); };
@@ -1957,7 +1847,6 @@ document.addEventListener('DOMContentLoaded', function() {
   // Navbar buttons now navigate to ridell pages
   document.getElementById('btn-history').onclick = () => newTab('ridell://history');
   document.getElementById('btn-downloads').onclick = () => newTab('ridell://downloads');
-  document.getElementById('btn-extensions').onclick = () => newTab('ridell://extensions');
 
   // ── RIDELL PAGE RENDERS
 
@@ -2001,21 +1890,6 @@ document.addEventListener('DOMContentLoaded', function() {
     body.querySelectorAll('.hist-item').forEach(el => el.onclick = () => navigate(hist[+el.dataset.i].url));
   }
   document.getElementById('rp-hist-clear').onclick = () => { hist = []; localStorage.removeItem('pb_hist'); renderRidelHistory(); showToast('History cleared', 'success'); };
-
-  // ridell://extensions — mount existing extensions page content
-  function renderRidelExtensions() {
-    // Move the #extensions-page inner content into rp-ext-body
-    const extPage = document.getElementById('extensions-page');
-    const body = document.getElementById('rp-ext-body');
-    if (!body || !extPage) return;
-    body.innerHTML = '';
-    // Clone the tabs and grid into rp-ext-body
-    const tabsEl = extPage.querySelector('#ext-tabs');
-    const gridEl = extPage.querySelector('#ext-body');
-    if (tabsEl) body.appendChild(tabsEl.cloneNode(true));
-    if (gridEl) body.appendChild(gridEl.cloneNode(true));
-    loadInstalledList().then(() => renderExtensions());
-  }
 
   // ridell://settings
   const pbSettings = JSON.parse(localStorage.getItem('pb_settings') || '{}');
@@ -2073,7 +1947,6 @@ document.addEventListener('DOMContentLoaded', function() {
     el.classList.add('open');
     if (page === 'downloads') renderRidelDownloads();
     if (page === 'history') renderRidelHistory();
-    if (page === 'extensions') { loadInstalledList().then(() => renderExtensions()); }
     if (page === 'settings') renderSettings();
   }
 

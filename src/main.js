@@ -1,4 +1,4 @@
-const { app, BrowserWindow, BrowserView, ipcMain, shell, session, protocol, net } = require('electron');
+const { app, BrowserWindow, BrowserView, ipcMain, shell, session, net } = require('electron');
 
 // ── DNS-over-HTTPS CONFIG ─────────────────────────────────────────
 const DNS_PROVIDERS = {
@@ -101,15 +101,11 @@ function applyDns(ses, providerKey) {
 
 const path = require('path');
 const fs = require('fs');
-const https = require('https');
-const { exec } = require('child_process');
+
 
 try { const sq = require('electron-squirrel-startup'); if (sq && sq.default) app.quit(); } catch(e) { /* not installed, skip */ }
 
-// Register custom scheme before app ready
-protocol.registerSchemesAsPrivileged([
-  { scheme: 'pb-install', privileges: { standard: false, secure: true, corsEnabled: true, bypassCSP: true, supportFetchAPI: true } }
-]);
+
 
 // ── PER-WINDOW STATE
 const winState = new Map();
@@ -127,170 +123,9 @@ function winFromEvent(e) {
   return BrowserWindow.fromWebContents(e.sender);
 }
 
-// ── EXTENSIONS
-const extDir = path.join(app.getPath('userData'), 'extensions');
-if (!fs.existsSync(extDir)) fs.mkdirSync(extDir, { recursive: true });
-const loadedExtensions = {};
 
-const extMetaFile = path.join(app.getPath('userData'), 'extensions_meta.json');
-let loadedExtMeta = {};
-try { loadedExtMeta = JSON.parse(fs.readFileSync(extMetaFile, 'utf8')); } catch(e) {}
 
-function saveExtensions() {
-  try { fs.writeFileSync(extMetaFile, JSON.stringify(loadedExtensions, null, 2)); } catch(e) {}
-}
 
-async function loadSavedExtensions() {
-  if (!fs.existsSync(extDir)) return;
-  const dirs = fs.readdirSync(extDir);
-  for (const dir of dirs) {
-    const extPath = path.join(extDir, dir);
-    if (!fs.statSync(extPath).isDirectory()) continue;
-    try {
-      const extApi = session.defaultSession.extensions || session.defaultSession;
-      const ext = await extApi.loadExtension(extPath, { allowFileAccess: true });
-      loadedExtensions[dir] = { id: ext.id, name: ext.manifest.name, version: ext.manifest.version };
-    } catch (e) {
-      console.log('Failed to load extension:', dir, e.message);
-    }
-  }
-}
-
-function downloadCRX(extId) {
-  return new Promise(function(resolve, reject) {
-    const crxUrl = 'https://clients2.google.com/service/update2/crx?response=redirect&prodversion=120.0.0.0&acceptformat=crx3&x=id%3D' + extId + '%26uc';
-    const tmpPath = path.join(app.getPath('temp'), extId + '.crx');
-    const file = fs.createWriteStream(tmpPath);
-    function get(url, redirectCount) {
-      if (!redirectCount) redirectCount = 0;
-      if (redirectCount > 5) { reject(new Error('Too many redirects')); return; }
-      https.get(url, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36' } }, function(res) {
-        if (res.statusCode === 301 || res.statusCode === 302) { get(res.headers.location, redirectCount + 1); return; }
-        if (res.statusCode !== 200) { reject(new Error('HTTP ' + res.statusCode)); return; }
-        res.pipe(file);
-        file.on('finish', function() { file.close(); resolve(tmpPath); });
-        file.on('error', reject);
-      }).on('error', reject);
-    }
-    get(crxUrl);
-  });
-}
-
-function extractCRX(crxPath, destDir) {
-  return new Promise(function(resolve, reject) {
-    try {
-      const buf = fs.readFileSync(crxPath);
-      const magic = buf.toString('utf8', 0, 4);
-      if (magic !== 'Cr24') { reject(new Error('Invalid CRX file')); return; }
-      const version = buf.readUInt32LE(4);
-      let zipOffset;
-      if (version === 3) {
-        zipOffset = 12 + buf.readUInt32LE(8);
-      } else if (version === 2) {
-        zipOffset = 16 + buf.readUInt32LE(8) + buf.readUInt32LE(12);
-      } else { reject(new Error('Unknown CRX version')); return; }
-      const zipPath = crxPath.replace('.crx', '.zip');
-      fs.writeFileSync(zipPath, buf.slice(zipOffset));
-      if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
-      const cmd = process.platform === 'win32'
-        ? 'powershell -command "Expand-Archive -Force \'' + zipPath + '\' \'' + destDir + '\'"'
-        : 'unzip -o "' + zipPath + '" -d "' + destDir + '"';
-      exec(cmd, function(err) {
-        try { fs.unlinkSync(zipPath); } catch(e2) {}
-        if (err) { reject(err); return; }
-        resolve(destDir);
-      });
-    } catch (e) { reject(e); }
-  });
-}
-
-async function doInstall(extId, onStatus) {
-  if (loadedExtensions[extId]) { onStatus('already', {}); return; }
-  try {
-    onStatus('downloading', {});
-    const crxPath = await downloadCRX(extId);
-    onStatus('extracting', {});
-    const destDir = path.join(extDir, extId);
-    await extractCRX(crxPath, destDir);
-    try { fs.unlinkSync(crxPath); } catch(e) {}
-    onStatus('loading', {});
-    const extApi2 = session.defaultSession.extensions || session.defaultSession;
-    const ext = await extApi2.loadExtension(destDir, { allowFileAccess: true });
-    loadedExtensions[extId] = { id: ext.id, name: ext.manifest.name, version: ext.manifest.version };
-    onStatus('installed', {});
-  } catch (err) {
-    onStatus('error', { message: err.message });
-  }
-}
-
-// ── EXTENSION IPC (built-in store)
-ipcMain.handle('ext-install', function(e, data) {
-  const extId = data.extId;
-  const win = winFromEvent(e);
-  return new Promise(function(resolve) {
-    doInstall(extId, function(status, extra) {
-      win.webContents.send('ext-status', Object.assign({ extId: extId, status: status }, extra));
-      if (status === 'installed') resolve({ success: true });
-      else if (status === 'error') resolve({ success: false, error: extra.message });
-      else if (status === 'already') resolve({ success: false, error: 'Already installed' });
-    });
-  });
-});
-
-ipcMain.handle('ext-uninstall', async function(e, data) {
-  const extId = data.extId;
-  try {
-    const extPath = path.join(extDir, extId);
-    if (loadedExtensions[extId]) {
-      const extApi3 = session.defaultSession.extensions || session.defaultSession;
-      await extApi3.removeExtension(loadedExtensions[extId].id);
-      delete loadedExtensions[extId];
-    }
-    if (fs.existsSync(extPath)) fs.rmSync(extPath, { recursive: true });
-    return { success: true };
-  } catch (err) { return { success: false, error: err.message }; }
-});
-
-ipcMain.handle('ext-list-installed', function() {
-  return Object.entries(loadedExtensions).map(function(entry) {
-    return Object.assign({ id: entry[0] }, entry[1]);
-  });
-});
-
-// ── ADD UNPACKED EXTENSION
-ipcMain.handle('ext-load-unpacked', async function(e) {
-  const { dialog } = require('electron');
-  const win = winFromEvent(e);
-  const result = await dialog.showOpenDialog(win, {
-    title: 'Select Extension Folder',
-    properties: ['openDirectory'],
-  });
-  if (result.canceled || !result.filePaths.length) return { canceled: true };
-  const folderPath = result.filePaths[0];
-  // Validate it has a manifest.json
-  const manifestPath = path.join(folderPath, 'manifest.json');
-  if (!fs.existsSync(manifestPath)) {
-    return { success: false, error: 'No manifest.json found in folder' };
-  }
-  try {
-    const extApi = session.defaultSession.extensions || session.defaultSession;
-    const ext = await extApi.loadExtension(folderPath, { allowFileAccess: true });
-    const key = 'unpacked_' + ext.id;
-    loadedExtensions[key] = { id: ext.id, name: ext.manifest.name, version: ext.manifest.version, unpacked: true, path: folderPath };
-    saveExtensions();
-    return { success: true, name: ext.manifest.name };
-  } catch(err) {
-    return { success: false, error: err.message };
-  }
-});
-
-// ── CWS INTERCEPTION
-const CWS_HOSTS = ['chrome.google.com', 'chromewebstore.google.com'];
-
-function isCWSUrl(url) {
-  try { return CWS_HOSTS.includes(new URL(url).hostname); }
-  catch (e) { return false; }
-}
 
 // CWS inject script inlined
 var CWS_INJECT_SCRIPT = ["(function() {","  if (window.__pbInjected) return;","  window.__pbInjected = true;","","  var BLUE = '#5b8af5';","  var GREEN = '#4ade80';","  var RED = '#e05c5c';","","  function getExtId() {","    var m = location.pathname.match(/\\/detail\\/[^/]+\\/([a-z]{32})/);","    if (m) return m[1];","    var p = new URLSearchParams(location.search);","    var id = p.get('id');","    if (id && /^[a-z]{32}$/.test(id)) return id;","    return null;","  }","","  function showOverlay(msg, color) {","    var o = document.getElementById('__pb_overlay');","    if (!o) {","      o = document.createElement('div');","      o.id = '__pb_overlay';","      o.style.cssText = 'position:fixed;top:16px;right:16px;z-index:2147483647;background:#12121f;color:#7fa3ff;border:1.5px solid #5b8af5;border-radius:12px;padding:13px 20px;font-family:-apple-system,sans-serif;font-size:13px;font-weight:500;box-shadow:0 6px 28px rgba(0,0,0,.7);display:flex;align-items:center;gap:10px;min-width:230px;transition:all .25s;';","      document.body.appendChild(o);","    }","    o.style.display = 'flex';","    o.innerHTML = msg;","    o.style.borderColor = color || BLUE;","    o.style.color = color || '#7fa3ff';","    return o;","  }","","  function hideOverlay() {","    var o = document.getElementById('__pb_overlay');","    if (o) o.style.display = 'none';","  }","","  function triggerInstall() {","    var extId = getExtId();","    if (!extId) { showOverlay('Could not detect extension ID', RED); return; }","    showOverlay('\u23f3 Installing...');","    if (window.ipc && window.ipc.send) {","      window.ipc.send('cws-install-ext', { extId: extId });","    } else {","      fetch('pb-install://' + extId).catch(function(){});","    }","  }","","  window.addEventListener('__pb_status', function(e) {","    var d = e.detail;","    if (d.status === 'downloading') showOverlay('Downloading .crx...');","    else if (d.status === 'extracting') showOverlay('Extracting...');","    else if (d.status === 'loading') showOverlay('Loading into browser...');","    else if (d.status === 'installed') {","      showOverlay('Installed! Active now.', GREEN);","      var btn = document.getElementById('__pb_install_btn');","      if (btn) { btn.textContent = 'Installed'; btn.style.background = GREEN; }","      setTimeout(hideOverlay, 3500);","    } else if (d.status === 'already') {","      showOverlay('Already installed', GREEN);","      setTimeout(hideOverlay, 2000);","    } else if (d.status === 'error') {","      showOverlay('Failed: ' + (d.message || 'Unknown error'), RED);","      setTimeout(hideOverlay, 5000);","    }","  });","","  function hideBanners() {","    document.querySelectorAll('div,section,aside,c-wiz').forEach(function(el) {","      if (el.id === '__pb_overlay' || el.id === '__pb_bar') return;","      var t = el.innerText || '';","      if (el.children.length < 8 && (","        t.includes('Switch to Chrome') ||","        t.includes('Item currently unavailable') ||","        t.includes('troubleshooting guide') ||","        t.includes('Install Chrome')","      )) {","        el.style.display = 'none';","      }","    });","  }","","  function makeInstallBtn() {","    var btn = document.createElement('button');","    btn.id = '__pb_install_btn';","    btn.textContent = '+ Add to PoleBrowse';","    btn.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;height:36px;padding:0 22px;background:' + BLUE + ';color:#fff;border:none;border-radius:18px;font-family:-apple-system,sans-serif;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 2px 10px rgba(91,138,245,.4);margin-left:10px;flex-shrink:0;';","    btn.onmouseover = function() { btn.style.background = '#7fa3ff'; };","    btn.onmouseout = function() { btn.style.background = BLUE; };","    btn.onclick = function(ev) { ev.preventDefault(); ev.stopPropagation(); triggerInstall(); };","    return btn;","  }","","  function injectButton() {","    if (!getExtId()) return false;","    if (document.getElementById('__pb_install_btn')) return true;","","    // Find Add to Chrome button (disabled or not)","    var addBtn = null;","    var allBtns = document.querySelectorAll('button');","    for (var i = 0; i < allBtns.length; i++) {","      var t = allBtns[i].textContent.trim();","      var label = allBtns[i].getAttribute('aria-label') || '';","      if (t === 'Add to Chrome' || t === 'Add extension' || label.includes('Add to Chrome')) {","        addBtn = allBtns[i];","        break;","      }","    }","","    var btn = makeInstallBtn();","","    if (addBtn && addBtn.parentNode) {","      addBtn.style.display = 'none';","      addBtn.parentNode.insertBefore(btn, addBtn.nextSibling);","      return true;","    }","","    // Fallback sticky bar","    if (document.getElementById('__pb_bar')) return false;","    var bar = document.createElement('div');","    bar.id = '__pb_bar';","    bar.style.cssText = 'position:sticky;top:0;z-index:9999;background:#12121f;border-bottom:1px solid #2c2c3a;padding:10px 24px;display:flex;align-items:center;gap:14px;';","    var label2 = document.createElement('span');","    label2.textContent = 'PoleBrowse Extension Store';","    label2.style.cssText = 'color:#7fa3ff;font-size:13px;font-family:sans-serif;';","    bar.appendChild(label2);","    bar.appendChild(btn);","    var main = document.querySelector('main') || document.body;","    main.insertBefore(bar, main.firstChild);","    return true;","  }","","  var retries = 0;","  var iv = setInterval(function() {","    hideBanners();","    if (injectButton() || retries++ > 40) clearInterval(iv);","  }, 250);","","  // SPA navigation handling","  var lastPath = location.pathname;","  setInterval(function() {","    hideBanners();","    if (location.pathname !== lastPath) {","      lastPath = location.pathname;","      ['__pb_install_btn','__pb_bar'].forEach(function(id) {","        var el = document.getElementById(id);","        if (el) el.remove();","      });","      retries = 0;","      clearInterval(iv);","      iv = setInterval(function() {","        hideBanners();","        if (injectButton() || retries++ > 40) clearInterval(iv);","      }, 250);","    }","  }, 500);","","})();",""].join("\n");
@@ -300,8 +135,7 @@ function injectCWS(view, win, tabId) {
   view.webContents.executeJavaScript(CWS_INJECT_SCRIPT).catch(function() {});
   // Dispatch status updates back into the page using CustomEvent
   // Store tabId on the view so protocol handler can find it
-  view.__pbTabId = tabId;
-  view.__pbWinId = win.id;
+
 }
 
 function dispatchStatusToPage(view, status, extra) {
@@ -330,7 +164,6 @@ function createWindow(openUrl) {
   win.setTitle('PoleBrowse Unstable');
 
   win.webContents.once('did-finish-load', function() {
-    loadSavedExtensions();
     if (openUrl) win.webContents.send('open-url-on-start', { url: openUrl });
     // Check default browser status and prompt if needed
     if (process.platform === 'win32' && !isDefaultBrowser()) {
@@ -449,25 +282,6 @@ ipcMain.on('view-navigate', function(e, data) {
     });
 
     view.webContents.on('dom-ready', function() {
-      // Inject PoleBrowse identity flag on every page (used by extension sites)
-      view.webContents.executeJavaScript('window.isPoleBrowse = true; window.poleBrowseVersion = "1.0";').catch(function(){});
-      // Spoof navigator on CWS pages so the store thinks we're Chrome
-      if (isCWSUrl(view.webContents.getURL())) {
-        var spoof = [
-          '(function() {',
-          '  function def(obj, prop, val) {',
-          '    try { Object.defineProperty(obj, prop, { get: function() { return val; }, configurable: true }); } catch(e) {}',
-          '  }',
-          '  def(navigator, "userAgent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");',
-          '  def(navigator, "vendor", "Google Inc.");',
-          '  def(navigator, "appVersion", "5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");',
-          '  def(navigator, "userAgentData", undefined);',
-          '  def(window, "chrome", { runtime: {}, app: {}, webstore: { install: function(url, cb) { if (cb) cb(); } } });',
-          '  def(window, "opr", undefined);',
-          '})();'
-        ].join('\n');
-        view.webContents.executeJavaScript(spoof).catch(function() {});
-      }
     });
 
     view.webContents.on('did-stop-loading', function() {
@@ -477,9 +291,6 @@ ipcMain.on('view-navigate', function(e, data) {
         url: pageUrl,
         title: view.webContents.getTitle(),
       });
-      if (isCWSUrl(pageUrl)) {
-        injectCWS(view, win, tabId);
-      }
     });
 
     view.webContents.on('page-title-updated', function(ev, title) {
@@ -924,7 +735,6 @@ app.whenReady().then(function() {
 
   const CHROME_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
-  // Spoof UA globally so CWS thinks we're Chrome
   session.defaultSession.setUserAgent(CHROME_UA);
 
   // Ad blocker
@@ -939,28 +749,6 @@ app.whenReady().then(function() {
     }
   );
 
-  // Override headers on every request to CWS — strip Electron fingerprint
-  session.defaultSession.webRequest.onBeforeSendHeaders(
-    { urls: ['*://chrome.google.com/*', '*://chromewebstore.google.com/*', '*://*.google.com/*'] },
-    function(details, callback) {
-      var headers = details.requestHeaders;
-      headers['User-Agent'] = CHROME_UA;
-      headers['Accept-Language'] = 'en-US,en;q=0.9';
-      // Remove headers that reveal Electron
-      delete headers['X-Requested-With'];
-      delete headers['Electron'];
-      // Remove sec-ch-ua headers that reveal non-Chrome
-      delete headers['sec-ch-ua'];
-      delete headers['sec-ch-ua-mobile'];
-      delete headers['sec-ch-ua-platform'];
-      // Set chrome-like sec-ch-ua
-      headers['sec-ch-ua'] = '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"';
-      headers['sec-ch-ua-mobile'] = '?0';
-      headers['sec-ch-ua-platform'] = '"Windows"';
-      callback({ requestHeaders: headers });
-    }
-  );
-
   // Allow Google Fonts in the app renderer (Electron enforces real CSP, <meta> tags are ignored)
   session.defaultSession.webRequest.onHeadersReceived(
     { urls: ['https://fonts.googleapis.com/*', 'https://fonts.gstatic.com/*'] },
@@ -972,78 +760,6 @@ app.whenReady().then(function() {
       callback({ responseHeaders: h });
     }
   );
-
-  // Intercept CWS responses to remove unavailability markers
-  session.defaultSession.webRequest.onHeadersReceived(
-    { urls: ['*://chromewebstore.google.com/*', '*://chrome.google.com/webstore/*'] },
-    function(details, callback) {
-      var headers = details.responseHeaders || {};
-      // Remove CSP that blocks our injected elements
-      delete headers['content-security-policy'];
-      delete headers['Content-Security-Policy'];
-      delete headers['x-frame-options'];
-      delete headers['X-Frame-Options'];
-      callback({ responseHeaders: headers });
-    }
-  );
-
-  // pb-install:// protocol — modern protocol.handle (Electron 25+)
-  protocol.handle('pb-install', function(request) {
-    const extId = new URL(request.url).hostname;
-    let foundView = null;
-    let foundWin = null;
-    BrowserWindow.getAllWindows().forEach(function(win) {
-      const state = getState(win);
-      Object.values(state.views).forEach(function(view) {
-        if (!view.webContents.isDestroyed() && isCWSUrl(view.webContents.getURL())) {
-          foundView = view;
-          foundWin = win;
-        }
-      });
-    });
-    if (foundWin && extId) {
-      doInstall(extId, function(status, extra) {
-        dispatchStatusToPage(foundView, status, extra);
-        foundWin.webContents.send('ext-status', Object.assign({ extId: extId, status: status }, extra));
-      });
-    }
-    return new Response('ok', { status: 200, headers: { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' } });
-  });
-
-  // IPC-based install trigger from CWS BrowserView (more reliable than XHR protocol)
-  ipcMain.on('cws-install-ext', function(e, data) {
-    const extId = data && data.extId;
-    if (!extId) return;
-    // Find the view that sent this
-    let foundView = null;
-    let foundWin = null;
-    BrowserWindow.getAllWindows().forEach(function(win) {
-      const state = getState(win);
-      Object.values(state.views).forEach(function(view) {
-        if (!view.webContents.isDestroyed() && view.webContents.id === e.sender.id) {
-          foundView = view;
-          foundWin = win;
-        }
-      });
-    });
-    if (!foundWin) {
-      // fallback: any CWS view
-      BrowserWindow.getAllWindows().forEach(function(win) {
-        const state = getState(win);
-        Object.values(state.views).forEach(function(view) {
-          if (!view.webContents.isDestroyed() && isCWSUrl(view.webContents.getURL())) {
-            foundView = view; foundWin = win;
-          }
-        });
-      });
-    }
-    if (extId) {
-      doInstall(extId, function(status, extra) {
-        if (foundView) dispatchStatusToPage(foundView, status, extra);
-        if (foundWin) foundWin.webContents.send('ext-status', Object.assign({ extId, status }, extra));
-      });
-    }
-  });
 
   createWindow();
 

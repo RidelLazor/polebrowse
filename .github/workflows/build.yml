@@ -9,6 +9,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  CARGO_NET_RETRY: 3
 
 jobs:
   build-linux:
@@ -25,28 +26,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             libgtk-3-dev libgdk-pixbuf2.0-dev libpango1.0-dev \
-            libcairo2-dev libatk1.0-dev libgdk-pixbuf-2.0-dev \
+            libcairo2-dev libatk1.0-dev \
             libx11-dev libxcomposite-dev libxdamage-dev libxrandr-dev \
             libxtst-dev libxss-dev libdbus-1-dev libdrm-dev \
-            libgbm-dev libpulse-dev libasound2-dev
-
-      - name: Cache CEF binaries
-        uses: actions/cache@v4
-        with:
-          path: ~/.local/share/cef
-          key: ${{ runner.os }}-cef-${{ hashFiles('browser/Cargo.toml') }}
-
-      - name: Pre-download CEF binaries (optional)
-        continue-on-error: true
-        run: |
-          export CEF_PATH="$HOME/.local/share/cef"
-          mkdir -p "$CEF_PATH"
-          cargo run -p download-cef -- --dir "$CEF_PATH" 2>/dev/null || true
+            libgbm-dev libpulse-dev libasound2-dev \
+            cmake ninja-build
 
       - name: Build
         run: cargo build --release --manifest-path browser/Cargo.toml
-        env:
-          CEF_PATH: ${{ runner.temp }}/cef
 
       - name: Upload binary
         uses: actions/upload-artifact@v4
@@ -63,16 +50,8 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Cache CEF binaries
-        uses: actions/cache@v4
-        with:
-          path: ~/.local/share/cef
-          key: ${{ runner.os }}-cef-${{ hashFiles('browser/Cargo.toml') }}
-
       - name: Build
         run: cargo build --release --manifest-path browser/Cargo.toml
-        env:
-          CEF_PATH: ${{ runner.temp }}/cef
 
       - name: Upload binary
         uses: actions/upload-artifact@v4

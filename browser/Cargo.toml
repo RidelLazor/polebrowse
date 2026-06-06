@@ -13,7 +13,6 @@ sandbox = ["cef/sandbox"]
 
 [dependencies]
 cef = "148"
-once_cell = "1"
 
 [build-dependencies]
 cef = { version = "148", features = ["build-util"] }
