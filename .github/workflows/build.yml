@@ -46,22 +46,22 @@ jobs:
 
       - name: Bundle release
         run: |
-          mkdir -p target/bundle
+          mkdir -p target/bundle/Resources
+          # binary
           cp browser/target/release/polebrowse target/bundle/
+          # shared libs alongside the binary
           CEF_RELEASE="${{ steps.cef_path.outputs.cef_release }}"
           if [ -n "$CEF_RELEASE" ]; then
-            cp -r "$CEF_RELEASE"/* target/bundle/
+            cp "$CEF_RELEASE"/lib*       target/bundle/ 2>/dev/null || true
+            cp "$CEF_RELEASE"/chrome-sandbox target/bundle/ 2>/dev/null || true
+            cp "$CEF_RELEASE"/v8_context_snapshot.bin target/bundle/ 2>/dev/null || true
+            cp "$CEF_RELEASE"/vk_swiftshader_icd.json target/bundle/ 2>/dev/null || true
           fi
+          # Resources/ for CEF runtime data
           CEF_ROOT="${{ steps.cef_path.outputs.cef_root }}"
           if [ -n "$CEF_ROOT" ] && [ -d "$CEF_ROOT/Resources" ]; then
-            cp -r "$CEF_ROOT/Resources" target/bundle/
+            cp -r "$CEF_ROOT/Resources"/* target/bundle/Resources/
           fi
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: PoleBrowse-Linux
-          path: target/bundle/
 
   build-windows:
     name: Windows (x86_64)
@@ -88,15 +88,18 @@ jobs:
       - name: Bundle release
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path target\bundle
+          New-Item -ItemType Directory -Force -Path target\bundle\Resources
           Copy-Item browser\target\release\polebrowse.exe -Destination target\bundle\
           $CEF_RELEASE = "${{ steps.cef_path.outputs.cef_release }}"
           if ($CEF_RELEASE) {
-            Copy-Item "$CEF_RELEASE\*" -Destination target\bundle\ -Recurse -Force
+            Copy-Item "$CEF_RELEASE\*.dll" -Destination target\bundle\ -Force
+            Copy-Item "$CEF_RELEASE\chrome-sandbox.exe" -Destination target\bundle\ -Force -ErrorAction SilentlyContinue
+            Copy-Item "$CEF_RELEASE\*.bin" -Destination target\bundle\ -Force
+            Copy-Item "$CEF_RELEASE\*.json" -Destination target\bundle\ -Force
           }
           $CEF_ROOT = "${{ steps.cef_path.outputs.cef_root }}"
           if ($CEF_ROOT -and (Test-Path "$CEF_ROOT\Resources")) {
-            Copy-Item "$CEF_ROOT\Resources" -Destination target\bundle\ -Recurse -Force
+            Copy-Item "$CEF_ROOT\Resources\*" -Destination target\bundle\Resources\ -Recurse -Force
           }
 
       - name: Upload artifact
