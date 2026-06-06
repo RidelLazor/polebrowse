@@ -38,7 +38,7 @@ jobs:
       - name: Locate CEF build output
         id: cef_path
         run: |
-          CEF_DIR=$(find browser/target/release/build -name "libcef.so" -exec dirname {} \; | head -n 1)
+          CEF_DIR=$(find browser/target/release/build -name "libcef.so" -exec dirname {} \; 2>/dev/null | head -n 1)
           echo "cef_release=$CEF_DIR" >> $GITHUB_OUTPUT
 
       - name: Bundle release
@@ -75,6 +75,12 @@ jobs:
           else
             echo "WARNING: no CEF Resources found"
           fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PoleBrowse-Linux
+          path: target/bundle/
 
   build-windows:
     name: Windows (x86_64)
