@@ -1,11 +1,10 @@
 use cef::*;
 use crate::render;
 
-wrap_client! {
-    pub struct PolebrowseClient;
+// ── LoadHandler ──
+wrap_load_handler! {
+    pub struct PolebrowseLoadHandler;
 
-    impl DisplayHandler {}
-    impl LifeSpanHandler {}
     impl LoadHandler {
         fn on_load_end(&self,
             browser: Option<&Browser>,
@@ -22,8 +21,19 @@ wrap_client! {
     }
 }
 
+// ── Client ──
+wrap_client! {
+    pub struct PolebrowseClient;
+
+    impl Client {
+        fn load_handler(&self) -> Option<LoadHandler> {
+            Some(PolebrowseLoadHandler)
+        }
+    }
+}
+
 impl PolebrowseClient {
     pub fn new_client() -> Client {
-        Client::new(Box::new(Self))
+        PolebrowseClient
     }
 }

@@ -1,8 +1,8 @@
-use cef::*;
-
 mod app;
-mod handler;
+mod client;
 mod render;
+
+use cef::*;
 
 fn main() -> Result<(), &'static str> {
     let args = cef::args::Args::new();
