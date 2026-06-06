@@ -16,6 +16,7 @@ cef = "148"
 
 [build-dependencies]
 cef = { version = "148", features = ["build-util"] }
+cef-dll-sys = "148"
 
 [package.metadata.cef]
 cef_version = "148"

@@ -2,7 +2,28 @@ mod app;
 mod client;
 mod render;
 
+use std::path::PathBuf;
+
 use cef::*;
+
+/// Build-time embedded path to the CEF resources directory.
+/// Set by build.rs via `cargo::rustc-env`; falls back to Resources/ next to the executable.
+fn cef_resources_dir() -> PathBuf {
+    if let Some(dir) = option_env!("CEF_RESOURCES_DIR") {
+        if !dir.is_empty() {
+            return PathBuf::from(dir);
+        }
+    }
+    // Fall back to Resources/ next to the executable
+    let exe = std::env::current_exe().ok();
+    if let Some(dir) = exe.as_ref().and_then(|p| p.parent()) {
+        let resources = dir.join("Resources");
+        if resources.exists() {
+            return resources;
+        }
+    }
+    PathBuf::from("Resources")
+}
 
 fn main() -> Result<(), &'static str> {
     let args = cef::args::Args::new();
@@ -22,8 +43,17 @@ fn main() -> Result<(), &'static str> {
 
     let mut app = app::PolebrowseApp::new();
 
+    let resources_dir = cef_resources_dir();
+    eprintln!("[polebrowse] using CEF resources: {}", resources_dir.display());
+
+    let resources_dir_path = CefString::from(resources_dir.to_string_lossy().as_ref());
+    let locales_dir_path = CefString::from(resources_dir.join("locales").to_string_lossy().as_ref());
+
     let settings = Settings {
         no_sandbox: 1,
+        disable_signal_handlers: 1,
+        resources_dir_path,
+        locales_dir_path,
         ..Default::default()
     };
 

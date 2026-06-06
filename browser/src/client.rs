@@ -33,8 +33,3 @@ wrap_client! {
     }
 }
 
-impl PolebrowseClient {
-    pub fn new_client() -> Client {
-        PolebrowseClient::new()
-    }
-}

@@ -40,27 +40,40 @@ jobs:
         run: |
           CEF_DIR=$(find browser/target/release/build -name "libcef.so" -exec dirname {} \; | head -n 1)
           echo "cef_release=$CEF_DIR" >> $GITHUB_OUTPUT
-          # parent of Release dir is the CEF binary distribution root
-          CEF_ROOT=$(dirname "$CEF_DIR")
-          echo "cef_root=$CEF_ROOT" >> $GITHUB_OUTPUT
 
       - name: Bundle release
         run: |
           mkdir -p target/bundle/Resources
+
           # binary
           cp browser/target/release/polebrowse target/bundle/
-          # shared libs alongside the binary
-          CEF_RELEASE="${{ steps.cef_path.outputs.cef_release }}"
-          if [ -n "$CEF_RELEASE" ]; then
-            cp "$CEF_RELEASE"/lib*       target/bundle/ 2>/dev/null || true
-            cp "$CEF_RELEASE"/chrome-sandbox target/bundle/ 2>/dev/null || true
-            cp "$CEF_RELEASE"/v8_context_snapshot.bin target/bundle/ 2>/dev/null || true
-            cp "$CEF_RELEASE"/vk_swiftshader_icd.json target/bundle/ 2>/dev/null || true
+
+          CEF_DIR="${{ steps.cef_path.outputs.cef_release }}"
+          if [ -z "$CEF_DIR" ]; then
+            echo "WARNING: CEF_DIR not found, skipping CEF runtime bundle"
+            exit 0
           fi
-          # Resources/ for CEF runtime data
-          CEF_ROOT="${{ steps.cef_path.outputs.cef_root }}"
-          if [ -n "$CEF_ROOT" ] && [ -d "$CEF_ROOT/Resources" ]; then
-            cp -r "$CEF_ROOT/Resources"/* target/bundle/Resources/
+
+          # shared libs alongside the binary
+          cp "$CEF_DIR"/lib*.so*   target/bundle/ 2>/dev/null || true
+          cp "$CEF_DIR"/chrome-sandbox target/bundle/ 2>/dev/null || true
+          cp "$CEF_DIR"/*.bin      target/bundle/ 2>/dev/null || true
+          cp "$CEF_DIR"/*.json     target/bundle/ 2>/dev/null || true
+
+          # Resources — handle both nested (Release+Resources siblings) and flat layouts
+          PARENT=$(dirname "$CEF_DIR")
+          if [ -d "$PARENT/Resources" ]; then
+            # Standard CEF layout: cef_binary_X/Release + cef_binary_X/Resources
+            cp -r "$PARENT/Resources"/* target/bundle/Resources/
+          elif ls "$CEF_DIR"/*.pak >/dev/null 2>&1; then
+            # Flat layout: everything in one directory
+            cp "$CEF_DIR"/*.pak      target/bundle/Resources/ 2>/dev/null || true
+            cp "$CEF_DIR"/icudtl.dat target/bundle/Resources/ 2>/dev/null || true
+            if [ -d "$CEF_DIR/locales" ]; then
+              cp -r "$CEF_DIR/locales" target/bundle/Resources/
+            fi
+          else
+            echo "WARNING: no CEF Resources found"
           fi
 
   build-windows:
@@ -82,24 +95,39 @@ jobs:
           $CEF_DLL = Get-ChildItem -Path browser\target\release\build -Recurse -Filter "libcef.dll" | Select-Object -First 1
           $CEF_DIR = $CEF_DLL.DirectoryName
           Write-Output "cef_release=$CEF_DIR" >> $env:GITHUB_OUTPUT
-          $CEF_ROOT = (Get-Item $CEF_DIR).Parent.FullName
-          Write-Output "cef_root=$CEF_ROOT" >> $env:GITHUB_OUTPUT
 
       - name: Bundle release
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path target\bundle\Resources
           Copy-Item browser\target\release\polebrowse.exe -Destination target\bundle\
-          $CEF_RELEASE = "${{ steps.cef_path.outputs.cef_release }}"
-          if ($CEF_RELEASE) {
-            Copy-Item "$CEF_RELEASE\*.dll" -Destination target\bundle\ -Force
-            Copy-Item "$CEF_RELEASE\chrome-sandbox.exe" -Destination target\bundle\ -Force -ErrorAction SilentlyContinue
-            Copy-Item "$CEF_RELEASE\*.bin" -Destination target\bundle\ -Force
-            Copy-Item "$CEF_RELEASE\*.json" -Destination target\bundle\ -Force
+
+          $CEF_DIR = "${{ steps.cef_path.outputs.cef_release }}"
+          if (-not $CEF_DIR) {
+            Write-Output "WARNING: CEF_DIR not found, skipping CEF runtime bundle"
+            exit 0
           }
-          $CEF_ROOT = "${{ steps.cef_path.outputs.cef_root }}"
-          if ($CEF_ROOT -and (Test-Path "$CEF_ROOT\Resources")) {
-            Copy-Item "$CEF_ROOT\Resources\*" -Destination target\bundle\Resources\ -Recurse -Force
+
+          # shared libs alongside the binary
+          Copy-Item "$CEF_DIR\*.dll" -Destination target\bundle\ -Force
+          Copy-Item "$CEF_DIR\chrome-sandbox.exe" -Destination target\bundle\ -Force -ErrorAction SilentlyContinue
+          Copy-Item "$CEF_DIR\*.bin" -Destination target\bundle\ -Force
+          Copy-Item "$CEF_DIR\*.json" -Destination target\bundle\ -Force
+
+          # Resources — handle both nested (Release+Resources siblings) and flat layouts
+          $PARENT = (Get-Item $CEF_DIR).Parent.FullName
+          if (Test-Path "$PARENT\Resources") {
+            # Standard CEF layout
+            Copy-Item "$PARENT\Resources\*" -Destination target\bundle\Resources\ -Recurse -Force
+          } elseif (Test-Path "$CEF_DIR\*.pak") {
+            # Flat layout
+            Copy-Item "$CEF_DIR\*.pak" -Destination target\bundle\Resources\ -Force
+            Copy-Item "$CEF_DIR\icudtl.dat" -Destination target\bundle\Resources\ -Force -ErrorAction SilentlyContinue
+            if (Test-Path "$CEF_DIR\locales") {
+              Copy-Item "$CEF_DIR\locales" -Destination target\bundle\Resources\ -Recurse -Force
+            }
+          } else {
+            Write-Output "WARNING: no CEF Resources found"
           }
 
       - name: Upload artifact
