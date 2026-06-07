@@ -1,35 +1,45 @@
 use cef::*;
-use crate::render;
+use crate::ui;
+use crate::ipc;
 
 // ── LoadHandler ──
 wrap_load_handler! {
-    pub struct PolebrowseLoadHandler;
+    pub struct PolebrowseLoadHandler {
+        state: ui::SharedState,
+    }
 
     impl LoadHandler {
         fn on_load_end(&self,
-            browser: Option<&mut Browser>,
-            _frame: Option<&mut Frame>,
+            _browser: Option<&mut Browser>,
+            frame: Option<&mut Frame>,
             _http_code: i32,
         ) {
-            let Some(browser) = browser else { return };
-            let Some(main_frame) = browser.main_frame() else { return };
+            let Some(frame) = frame else { return };
+            if frame.is_main() == 0 { return; }
 
-            if let Ok(js) = render::chrome_script() {
-                let code = CefString::from(js.as_str());
-                main_frame.execute_java_script(Some(&code), None, 0);
-            }
+            // URL is now updated via JS in the HTML UI
         }
     }
 }
 
 // ── Client ──
 wrap_client! {
-    pub struct PolebrowseClient;
+    pub struct PolebrowseClient {
+        state: ui::SharedState,
+    }
 
     impl Client {
         fn load_handler(&self) -> Option<LoadHandler> {
-            Some(PolebrowseLoadHandler::new())
+            Some(PolebrowseLoadHandler::new(self.state.clone()))
+        }
+
+        fn on_process_message_received(&self,
+            browser: Option<&mut Browser>,
+            frame: Option<&mut Frame>,
+            _source_process: ProcessId,
+            message: Option<&mut ProcessMessage>,
+        ) -> i32 {
+            ipc::handle_process_message(browser, frame, message, &self.state)
         }
     }
 }
-

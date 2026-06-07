@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 fn main() {
     println!("cargo::rerun-if-changed=build.rs");
+    println!("cargo::rerun-if-changed=../www");
 
     // Locate the CEF binary distribution directory
     let Some(cef_dir) = cef_dll_sys::get_cef_dir() else {
@@ -41,6 +42,14 @@ fn main() {
     } else {
         // Nested layout: copy everything from Resources/
         copy_dir(&resources_dir, &dest);
+    }
+
+    // Copy 'www' directory from root to target
+    let www_src = PathBuf::from("../www");
+    let www_dest = target_dir.join("www");
+    if www_src.exists() {
+        copy_dir(&www_src, &www_dest);
+        eprintln!("Copied 'www' resources to {}", www_dest.display());
     }
 
     eprintln!(
