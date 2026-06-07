@@ -36,6 +36,7 @@ jobs:
           cp -r browser/target/release/Resources polebrowse.AppDir/usr/bin/
           cp -r browser/target/release/www polebrowse.AppDir/usr/bin/
           cp src/assets/pb-logo-256.png polebrowse.AppDir/usr/share/icons/hicolor/256x256/apps/polebrowse.png
+          cp src/assets/pb-logo-256.png polebrowse.AppDir/polebrowse.png
           cp polebrowse.desktop polebrowse.AppDir/
           
           # Create simple AppRun script
@@ -48,7 +49,7 @@ jobs:
           wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x appimagetool-x86_64.AppImage
           ./appimagetool-x86_64.AppImage --appimage-extract
-          ./squashfs-root/AppRun polebrowse.AppDir PoleBrowse.AppImage
+          ./squashfs-root/AppRun --appimage-desktop-file polebrowse.desktop polebrowse.AppDir PoleBrowse.AppImage
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
