@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=PoleBrowse
+Exec=polebrowse
+Icon=polebrowse
+Type=Application
+Categories=Network;WebBrowser;
+Terminal=false

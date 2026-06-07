@@ -36,6 +36,7 @@ jobs:
           cp -r browser/target/release/Resources polebrowse.AppDir/usr/bin/
           cp -r browser/target/release/www polebrowse.AppDir/usr/bin/
           cp src/assets/pb-logo-256.png polebrowse.AppDir/usr/share/icons/hicolor/256x256/apps/polebrowse.png
+          cp polebrowse.desktop polebrowse.AppDir/
           
           # Create simple AppRun script
           echo '#!/bin/sh' > polebrowse.AppDir/AppRun
