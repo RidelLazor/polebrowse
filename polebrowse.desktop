@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=PoleBrowse
-Exec=polebrowse
+Exec=AppRun
 Icon=polebrowse
 Type=Application
 Categories=Network;WebBrowser;

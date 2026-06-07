@@ -49,7 +49,7 @@ jobs:
           wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x appimagetool-x86_64.AppImage
           ./appimagetool-x86_64.AppImage --appimage-extract
-          ./squashfs-root/AppRun --appimage-desktop-file polebrowse.desktop polebrowse.AppDir PoleBrowse.AppImage
+          ./squashfs-root/AppRun polebrowse.AppDir PoleBrowse.AppImage
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
