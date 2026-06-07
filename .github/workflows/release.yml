@@ -46,7 +46,8 @@ jobs:
           # Download and run appimagetool to package
           wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x appimagetool-x86_64.AppImage
-          ./appimagetool-x86_64.AppImage polebrowse.AppDir PoleBrowse.AppImage
+          ./appimagetool-x86_64.AppImage --appimage-extract
+          ./squashfs-root/AppRun polebrowse.AppDir PoleBrowse.AppImage
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
