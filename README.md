@@ -1,7 +1,7 @@
 <div align="center">
   <h1>🌐 PoleBrowse</h1>
   <p>A fast, open-source, private desktop browser built with Electron</p>
-  <p>by <strong>RidelL</strong></p>
+  <p> <strong></strong></p>
 
   ![Version](https://img.shields.io/badge/version-1.0.0-blue)
   ![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20macOS-lightgrey)
