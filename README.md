@@ -12,10 +12,7 @@
 
 ## Features
 - 🛡️ DNS-over-HTTPS protection (8 providers)
-- 🌙 Dark & Light mode
-- 📚 History, bookmarks, downloads
 - 🔒 Safe browsing (dangerous site detection)
-- 🦖 No internet page
 - ⚡ Fast tab management
 
 ## Install
