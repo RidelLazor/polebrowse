@@ -1,15 +1,24 @@
 {
   "name": "polebrowse",
   "productName": "PoleBrowse",
-  "version": "2.0.0",
+  "version": "1.5.0",
   "description": "PoleBrowse Desktop Browser - Tauri build",
-  "type": "module",
+  "main": "src/main.js",
   "scripts": {
     "dev": "tauri dev",
     "build": "tauri build",
+    "electron": "electron --no-sandbox src/main.js",
     "preview": "tauri dev",
     "clean": "rm -rf src-tauri/target"
   },
   "author": "RidelL",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^12.11.1",
+    "electron": "^42.4.1",
+    "electron-squirrel-startup": "^1.0.1"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.11.2"
+  }
 }

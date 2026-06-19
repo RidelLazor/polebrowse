@@ -772,28 +772,7 @@ app.on('window-all-closed', function() {
   if (process.platform !== 'darwin') app.quit();
 });
 
-// ── VPN IPC HANDLERS ─────────────────────────────────────────
-ipcMain.handle('get-vpn-state', function() {
-  return { providers: VPN_PROVIDERS, active: activeVpnKey, enabled: vpnEnabled };
-});
-
-ipcMain.handle('set-vpn-provider', function(e, key) {
-  if (!VPN_PROVIDERS[key]) return { success: false, error: 'Unknown provider' };
-  activeVpnKey = key;
-  if (vpnEnabled) applyProxy(session.defaultSession, key);
-  return { success: true, provider: VPN_PROVIDERS[key].name };
-});
-
-ipcMain.handle('toggle-vpn', function(e, enable) {
-  vpnEnabled = enable;
-  if (enable) {
-    applyProxy(session.defaultSession, activeVpnKey);
-  } else {
-    disableProxy(session.defaultSession);
-  }
-  return { success: true, enabled: vpnEnabled };
-});
-
+// ── CUSTOM PROXY IPC ─────────────────────────────────────────────
 ipcMain.handle('set-custom-proxy', function(e, data) {
   customProxyHost = data.host || '127.0.0.1';
   customProxyPort = parseInt(data.port) || 1080;
@@ -905,12 +884,5 @@ ipcMain.handle('test-proxy', async function() {
   }
 });
 
-// ── ADBLOCK IPC ──────────────────────────────────────────────────
-ipcMain.handle('get-adblock-state', function() {
-  return { enabled: adBlockEnabled, blockedCount: global._blockedCount || 0 };
-});
-ipcMain.handle('toggle-adblock', function(e, enable) {
-  adBlockEnabled = enable;
-  return { success: true, enabled: adBlockEnabled };
-});
+
 

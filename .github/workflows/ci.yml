@@ -1,0 +1,114 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  electron:
+    name: Electron (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            icon: src/assets/pb-logo-256.png
+          - os: windows-latest
+            platform: win32
+            icon: src/assets/pb-logo.ico
+          - os: macos-latest
+            platform: darwin
+            icon: src-tauri/icons/icon.icns
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Package Electron app
+        run: >-
+          npx @electron/packager . polebrowse
+          --out=dist
+          --platform=${{ matrix.platform }}
+          --arch=x64
+          --icon=${{ matrix.icon }}
+          --prune=true
+          --asar
+          --osx-sign=false
+          --ignore=.github
+          --ignore=src-tauri
+          --ignore=browser
+          --ignore=www
+          --ignore=.git
+          --ignore=README.md
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PoleBrowse-Electron-${{ matrix.os }}
+          path: dist/
+
+  tauri:
+    name: Tauri (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Linux deps
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libxdo-dev \
+            libssl-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            libsoup-3.0-dev
+
+      - run: npm ci
+
+      - name: Build Tauri
+        run: npm run build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PoleBrowse-Tauri-${{ matrix.os }}
+          path: src-tauri/target/release/bundle/
