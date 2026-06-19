@@ -72,7 +72,11 @@ fn build_perf_args() -> (Vec<CString>, Vec<*mut c_char>, MainArgs) {
         .collect();
 
     let main_args = MainArgs {
+        #[cfg(windows)]
+        instance: std::ptr::null_mut(),
+        #[cfg(not(windows))]
         argc: argv.len() as i32,
+        #[cfg(not(windows))]
         argv: argv.as_mut_ptr(),
     };
 
