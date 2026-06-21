@@ -36,15 +36,13 @@ jobs:
             librsvg2-dev libsoup-3.0-dev
 
       - name: Install npm deps
-        run: npm ci --ignore-scripts
+        run: npm ci
+
+      - name: Init Android project
+        run: npm run tauri android init
 
       - name: Build Android APK
-        uses: tauri-apps/tauri-action@v0.6.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          mobile: android
-          args: --apk
+        run: npm run tauri android build -- --apk
 
       - uses: actions/upload-artifact@v4
         with:
