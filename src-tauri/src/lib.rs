@@ -472,6 +472,7 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .manage(Mutex::new(init_state()))
         .setup(|app| {
+            #[cfg(not(mobile))]
             if let Some(window) = app.get_webview_window("main") {
                 let _ = window.maximize();
             }
