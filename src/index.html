@@ -25,7 +25,7 @@ if (!window.ipc || !window.ipc.send) {
   const win = TAURI.window.getCurrentWindow();
   const CMD_MAP = {
     'get-dns-providers':'get_dns_providers','set-dns-provider':'set_dns_provider','toggle-dns':'toggle_dns','test-dns':'test_dns',
-    'get-vpn-state':'get_vpn_state','set-vpn-provider':'set_vpn_provider','toggle-vpn':'toggle_vpn','set-custom-proxy':'set_custom_proxy','test-proxy':'test_proxy',
+    'get-vpn-state':'get_vpn_state','set-vpn-provider':'set_vpn_provider','set-vpn-country':'set_vpn_country','toggle-vpn':'toggle_vpn','set-custom-proxy':'set_custom_proxy','test-proxy':'test_proxy',
     'get-adblocker-state':'get_adblock_state','get-adblock-state':'get_adblock_state','toggle-adblocker':'toggle_adblock','toggle-adblock':'toggle_adblock',
     'autocomplete':'autocomplete','import-list-browsers':'import_list_browsers','import-browser-data':'import_browser_data',
   };
@@ -320,6 +320,13 @@ if (!window.ipc || !window.ipc.send) {
             <option value="custom">Custom Proxy</option>
           </select>
         </div>
+        <div class="settings-row" id="vpn-country-row-settings" style="display:none;">
+          <div class="settings-row-info">
+            <div class="settings-row-label">Country</div>
+            <div class="settings-row-desc">Proxy exit location</div>
+          </div>
+          <select class="st-select" id="vpn-country-select" style="max-width:180px;"></select>
+        </div>
         <div class="settings-row" id="vpn-custom-row" style="display:none;">
           <div class="settings-row-info">
             <div class="settings-row-label">Custom Proxy</div>
@@ -435,6 +442,66 @@ if (!window.ipc || !window.ipc.send) {
   <div class="dm-sep"></div>
   <div class="dm-section">
     <div class="dm-item dm-exit" id="dm-exit"><span class="dm-icon">&#x2715;</span><span class="dm-label">Exit</span></div>
+  </div>
+</div>
+
+<!-- VPN POPUP -->
+<div id="vpn-popup">
+  <div class="vp-section">
+    <div class="vp-status-row">
+      <span class="vp-status-dot" id="vp-status-dot"></span>
+      <span class="vp-status-label" id="vp-status-label">VPN Off</span>
+      <label class="st-switch" style="margin-left:auto;"><input type="checkbox" id="vp-toggle"><span class="st-slider"></span></label>
+    </div>
+  </div>
+  <div class="vp-sep"></div>
+  <div class="vp-section">
+    <div class="vp-row">
+      <span class="vp-label">Provider</span>
+      <select class="st-select" id="vp-provider" style="max-width:150px;">
+        <option value="none">No VPN (Direct)</option>
+        <option value="tor">Tor Network</option>
+        <option value="i2p">I2P</option>
+        <option value="privoxy">Privoxy</option>
+        <option value="mullvad">Mullvad SOCKS</option>
+        <option value="windscribe">Windscribe SOCKS</option>
+        <option value="custom">Custom Proxy</option>
+      </select>
+    </div>
+  </div>
+  <div class="vp-section" id="vp-country-row" style="display:none;">
+    <div class="vp-row">
+      <span class="vp-label">Country</span>
+      <select class="st-select" id="vp-country" style="max-width:150px;"></select>
+    </div>
+  </div>
+  <div class="vp-section" id="vp-custom-row" style="display:none;">
+    <div class="vp-row">
+      <span class="vp-label">Proxy</span>
+      <select class="st-select" id="vp-custom-type" style="width:70px;">
+        <option value="socks5">SOCKS5</option>
+        <option value="socks4">SOCKS4</option>
+        <option value="http">HTTP</option>
+      </select>
+      <input type="text" id="vp-custom-host" placeholder="127.0.0.1" class="vp-input" style="width:95px;">
+      <span style="color:var(--muted);font-size:12px;">:</span>
+      <input type="text" id="vp-custom-port" placeholder="1080" class="vp-input" style="width:50px;">
+    </div>
+    <div class="vp-row" style="margin-top:4px;">
+      <button class="vp-btn" id="vp-custom-save" style="margin-left:auto;">Save</button>
+    </div>
+  </div>
+  <div class="vp-sep"></div>
+  <div class="vp-section">
+    <div class="vp-row">
+      <span class="vp-label" style="font-size:11px;color:var(--muted);">IP</span>
+      <span class="vp-ip" id="vp-ip-label">&#x2014;</span>
+      <button class="vp-btn" id="vp-test-btn" style="margin-left:auto;">Check IP</button>
+    </div>
+  </div>
+  <div class="vp-sep"></div>
+  <div class="vp-section" style="padding:4px 8px;">
+    <div class="vp-footer-btn" id="vp-open-settings">&#x2699; Open full settings</div>
   </div>
 </div>
 

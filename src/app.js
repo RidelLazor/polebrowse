@@ -507,6 +507,113 @@ document.getElementById('dm-viewsrc').onclick = () => { hideDotMenu(); const t =
 document.getElementById('dm-settings').onclick = () => { hideDotMenu(); newTab('ridell://settings'); };
 document.getElementById('dm-exit').onclick = () => window.ipc.send('win-close');
 
+// ── VPN POPUP
+const vpnPopup = document.getElementById('vpn-popup');
+function showVpnPopup() {
+  hideDotMenu();
+  if (vpnPopup.classList.contains('show')) { hideVpnPopup(); return; }
+  const tab = getTab(activeId);
+  if (tab && tab.url && !tab.url.startsWith('ridell://')) { window.ipc.send('view-hide'); vpnPopup._viewHidden = true; }
+  vpnPopup.classList.add('show');
+  initVpnPopup();
+}
+function hideVpnPopup() {
+  vpnPopup.classList.remove('show');
+  if (vpnPopup._viewHidden) { vpnPopup._viewHidden = false; window.ipc.send('view-show', { tabId: activeId }); }
+}
+document.getElementById('vpn-indicator').addEventListener('click', e => { e.stopPropagation(); showVpnPopup(); });
+document.addEventListener('mousedown', e => {
+  if (e.target.id === 'vpn-indicator' || e.target.closest('#vpn-indicator')) return;
+  if (vpnPopup.classList.contains('show') && !vpnPopup.contains(e.target)) hideVpnPopup();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && vpnPopup.classList.contains('show')) hideVpnPopup(); });
+document.getElementById('vp-open-settings').onclick = () => { hideVpnPopup(); newTab('ridell://settings'); };
+
+const COUNTRY_FLAGS = {
+  nl:'🇳🇱',us:'🇺🇸',ca:'🇨🇦',gb:'🇬🇧',de:'🇩🇪',fr:'🇫🇷',se:'🇸🇪',no:'🇳🇴',
+  ch:'🇨🇭',at:'🇦🇹',be:'🇧🇪',dk:'🇩🇰',fi:'🇫🇮',ie:'🇮🇪',it:'🇮🇹',jp:'🇯🇵',
+  lu:'🇱🇺',my:'🇲🇾',mx:'🇲🇽',nz:'🇳🇿',pl:'🇵🇱',ro:'🇷🇴',sg:'🇸🇬',za:'🇿🇦',
+  kr:'🇰🇷',es:'🇪🇸',tr:'🇹🇷',ae:'🇦🇪'
+};
+
+function populateCountries(sel, countries, active) {
+  sel.innerHTML = '';
+  for (const [code, name] of Object.entries(countries)) {
+    const flag = COUNTRY_FLAGS[code] || '';
+    const opt = document.createElement('option');
+    opt.value = code; opt.textContent = flag ? flag + ' ' + name : name;
+    if (code === active) opt.selected = true;
+    sel.appendChild(opt);
+  }
+}
+
+function updateVpnCountryRow(providers, activeKey, activeCountry) {
+  const countryRow = document.getElementById('vp-country-row');
+  const countrySel = document.getElementById('vp-country');
+  const p = providers && providers[activeKey];
+  if (p && p.countries) {
+    countryRow.style.display = '';
+    populateCountries(countrySel, p.countries, activeCountry || p.defaultCountry);
+  } else {
+    countryRow.style.display = 'none';
+  }
+}
+
+async function initVpnPopup() {
+  if (!window.ipc) return;
+  const sel = document.getElementById('vp-provider'), toggle = document.getElementById('vp-toggle');
+  const dot = document.getElementById('vp-status-dot'), lbl = document.getElementById('vp-status-label');
+  const customRow = document.getElementById('vp-custom-row');
+  const countrySel = document.getElementById('vp-country');
+  let vpnData;
+  if (!sel) return;
+  try {
+    vpnData = await window.ipc.invoke('get-vpn-state');
+    if (vpnData) {
+      sel.value = vpnData.active || 'none';
+      if (vpnData.enabled) { dot.style.background = 'var(--green)'; dot.style.boxShadow = '0 0 6px var(--green)'; lbl.textContent = 'VPN Active'; lbl.style.color = 'var(--green)'; }
+      else { dot.style.background = 'var(--muted)'; dot.style.boxShadow = 'none'; lbl.textContent = 'VPN Off'; lbl.style.color = 'var(--muted)'; }
+      if (toggle) toggle.checked = vpnData.enabled;
+      if (vpnData.active === 'custom' && customRow) customRow.style.display = 'flex';
+      else if (customRow) customRow.style.display = 'none';
+      const ipLbl = document.getElementById('vp-ip-label');
+      if (vpnData.ip && ipLbl) { ipLbl.textContent = vpnData.ip; ipLbl.style.color = 'var(--text)'; }
+      updateVpnCountryRow(vpnData.providers, vpnData.active, vpnData.country);
+    }
+  } catch(e) {}
+  sel.onchange = async () => {
+    const key = sel.value;
+    if (customRow) customRow.style.display = key === 'custom' ? 'flex' : 'none';
+    const r = await window.ipc.invoke('set-vpn-provider', key);
+    if (r && r.country) updateVpnCountryRow(vpnData ? vpnData.providers : null, key, r.country);
+    else updateVpnCountryRow(vpnData ? vpnData.providers : null, key, null);
+  };
+  if (countrySel) countrySel.onchange = async () => {
+    const key = sel.value;
+    await window.ipc.invoke('set-vpn-country', key, countrySel.value);
+  };
+  if (toggle) toggle.onchange = async () => {
+    const r = await window.ipc.invoke('toggle-vpn', toggle.checked);
+    if (r) { const en = r.enabled; dot.style.background = en ? 'var(--green)' : 'var(--muted)'; dot.style.boxShadow = en ? '0 0 6px var(--green)' : 'none'; lbl.textContent = en ? 'VPN Active' : 'VPN Off'; lbl.style.color = en ? 'var(--green)' : 'var(--muted)'; }
+  };
+  const saveBtn = document.getElementById('vp-custom-save');
+  if (saveBtn) saveBtn.onclick = async () => {
+    const host = document.getElementById('vp-custom-host').value.trim(), port = document.getElementById('vp-custom-port').value.trim(), type = document.getElementById('vp-custom-type').value;
+    if (!host || !port) return;
+    await window.ipc.invoke('set-custom-proxy', { host, port, type });
+    saveBtn.textContent = 'Saved!'; setTimeout(() => { saveBtn.textContent = 'Save'; }, 2000);
+  };
+  const testBtn = document.getElementById('vp-test-btn'), ipLbl = document.getElementById('vp-ip-label');
+  if (testBtn) testBtn.onclick = async () => {
+    testBtn.textContent = '...'; testBtn.disabled = true;
+    const res = await window.ipc.invoke('test-proxy');
+    if (ipLbl) { ipLbl.textContent = res.success ? res.ip : (res.error || 'Failed'); ipLbl.style.color = res.success ? 'var(--green)' : 'var(--red)'; }
+    testBtn.textContent = 'Check IP'; testBtn.disabled = false;
+  };
+}
+
+// ── THEME TOGGLE
+
 // ── THEME TOGGLE
 function applyTheme(theme) {
   document.body.classList.remove('light', 'glass');
@@ -608,17 +715,29 @@ function setVpnUI(enabled) {
 async function initVpnUI() {
   if (!window.ipc) return;
   const sel = document.getElementById('vpn-provider-select'), desc = document.getElementById('vpn-provider-desc'), note = document.getElementById('vpn-note-desc'), toggle = document.getElementById('vpn-toggle'), customRow = document.getElementById('vpn-custom-row');
+  const countryRow = document.getElementById('vpn-country-row-settings'), countrySel = document.getElementById('vpn-country-select');
   if (!sel) return;
   const data = await window.ipc.invoke('get-vpn-state');
   if (data) {
     sel.value = data.active || 'none'; if (desc) desc.textContent = VPN_DESCS[data.active] || VPN_DESCS.none;
     if (note) note.textContent = VPN_DESCS[data.active] || VPN_DESCS.none;
     setVpnUI(data.enabled); if (data.active === 'custom' && customRow) customRow.style.display = 'flex';
+    if (data.providers && data.providers[data.active] && data.providers[data.active].countries && countryRow && countrySel) {
+      countryRow.style.display = '';
+      populateCountries(countrySel, data.providers[data.active].countries, data.country || data.providers[data.active].defaultCountry);
+    } else if (countryRow) { countryRow.style.display = 'none'; }
   }
   sel.addEventListener('change', async () => {
     const key = sel.value; if (desc) desc.textContent = VPN_DESCS[key] || ''; if (note) note.textContent = VPN_DESCS[key] || '';
     if (customRow) customRow.style.display = key === 'custom' ? 'flex' : 'none';
-    await window.ipc.invoke('set-vpn-provider', key);
+    const r = await window.ipc.invoke('set-vpn-provider', key);
+    if (r && r.country && countryRow && countrySel && data && data.providers && data.providers[key] && data.providers[key].countries) {
+      countryRow.style.display = '';
+      populateCountries(countrySel, data.providers[key].countries, r.country);
+    } else if (countryRow) { countryRow.style.display = 'none'; }
+  });
+  if (countrySel) countrySel.addEventListener('change', async () => {
+    await window.ipc.invoke('set-vpn-country', sel.value, countrySel.value);
   });
   if (toggle) toggle.addEventListener('change', async () => { const r = await window.ipc.invoke('toggle-vpn', toggle.checked); setVpnUI(r.enabled); });
   const saveBtn = document.getElementById('vpn-custom-save');

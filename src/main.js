@@ -20,15 +20,32 @@ const VPN_PROVIDERS = {
   i2p:        { name: 'I2P',               type: 'socks5', host: '127.0.0.1', port: 4444,  info: 'Requires I2P running locally' },
   privoxy:    { name: 'Privoxy',           type: 'http',   host: '127.0.0.1', port: 8118,  info: 'Requires Privoxy running locally' },
   mullvad:    { name: 'Mullvad SOCKS',     type: 'socks5', host: 'socks5.mullvad.net', port: 1080, info: 'Requires Mullvad account' },
-  windscribe: { name: 'Windscribe SOCKS',  type: 'socks5', host: 'nl.windscribe.com', port: 1080,  info: 'Requires Windscribe account' },
+  windscribe: { name: 'Windscribe SOCKS',  type: 'socks5', host: 'nl.windscribe.com', port: 1080,  info: 'Requires Windscribe account',
+    countries: {
+      nl: 'Netherlands', us: 'United States', ca: 'Canada', gb: 'United Kingdom',
+      de: 'Germany', fr: 'France', se: 'Sweden', no: 'Norway',
+      ch: 'Switzerland', at: 'Austria', be: 'Belgium', dk: 'Denmark',
+      fi: 'Finland', ie: 'Ireland', it: 'Italy', jp: 'Japan',
+      lu: 'Luxembourg', my: 'Malaysia', mx: 'Mexico', nz: 'New Zealand',
+      pl: 'Poland', ro: 'Romania', sg: 'Singapore', za: 'South Africa',
+      kr: 'South Korea', es: 'Spain', tr: 'Turkey', ae: 'UAE'
+    }, defaultCountry: 'nl'
+  },
   custom:     { name: 'Custom Proxy',      type: 'socks5', host: '127.0.0.1', port: 1080,  info: 'Enter your own proxy address' },
 };
 
-let activeVpnKey   = 'none';
-let vpnEnabled     = false;
-let customProxyHost = '127.0.0.1';
-let customProxyPort = 1080;
-let customProxyType = 'socks5';
+let activeVpnKey    = 'none';
+let vpnEnabled      = false;
+let activeCountries = {};
+let customProxyHost  = '127.0.0.1';
+let customProxyPort  = 1080;
+let customProxyType  = 'socks5';
+
+function countryHost(providerKey, country) {
+  const p = VPN_PROVIDERS[providerKey];
+  if (!p || !p.countries || !country) return p ? p.host : null;
+  return country + '.' + p.host.split('.').slice(1).join('.');
+}
 
 function applyProxy(ses, providerKey) {
   const provider = VPN_PROVIDERS[providerKey] || VPN_PROVIDERS.none;
@@ -38,7 +55,8 @@ function applyProxy(ses, providerKey) {
     console.log('[VPN] Direct connection');
     return;
   }
-  const host = providerKey === 'custom' ? customProxyHost : provider.host;
+  const country = provider.countries ? (activeCountries[providerKey] || provider.defaultCountry) : null;
+  const host = providerKey === 'custom' ? customProxyHost : (country ? countryHost(providerKey, country) : provider.host);
   const port = providerKey === 'custom' ? customProxyPort : provider.port;
   const rule = `${provider.type}://${host}:${port}`;
   ses.setProxy({ proxyRules: rule });
@@ -834,15 +852,26 @@ ipcMain.handle('test-dns', async function() {
 
 // ── VPN IPC HANDLERS ─────────────────────────────────────────────
 ipcMain.handle('get-vpn-state', function() {
+  const p = VPN_PROVIDERS[activeVpnKey];
   return { providers: VPN_PROVIDERS, active: activeVpnKey, enabled: vpnEnabled,
-           customHost: customProxyHost, customPort: customProxyPort, customType: customProxyType };
+           customHost: customProxyHost, customPort: customProxyPort, customType: customProxyType,
+           country: (p && p.countries) ? (activeCountries[activeVpnKey] || p.defaultCountry) : null };
 });
 
 ipcMain.handle('set-vpn-provider', function(e, key) {
   if (!VPN_PROVIDERS[key]) return { success: false, error: 'Unknown provider' };
   activeVpnKey = key;
   if (vpnEnabled) applyProxy(session.defaultSession, key);
-  return { success: true, provider: VPN_PROVIDERS[key].name };
+  const p = VPN_PROVIDERS[key];
+  return { success: true, provider: p.name, country: (p.countries) ? (activeCountries[key] || p.defaultCountry) : null };
+});
+
+ipcMain.handle('set-vpn-country', function(e, key, country) {
+  const p = VPN_PROVIDERS[key];
+  if (!p || !p.countries || !p.countries[country]) return { success: false, error: 'Invalid country' };
+  activeCountries[key] = country;
+  if (vpnEnabled && activeVpnKey === key) applyProxy(session.defaultSession, key);
+  return { success: true, country: country };
 });
 
 ipcMain.handle('toggle-vpn', function(e, enable, opts) {
