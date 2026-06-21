@@ -42,7 +42,7 @@ jobs:
         run: npx @tauri-apps/cli android init
 
       - name: Build Android APK
-        run: npx @tauri-apps/cli android build -- --apk
+        run: npx @tauri-apps/cli android build
 
       - uses: actions/upload-artifact@v4
         with:
