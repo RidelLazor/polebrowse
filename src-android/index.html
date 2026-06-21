@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>PoleBrowse</title>
+<link rel="stylesheet" href="style.css">
+<script>
+if (!window.ipc || !window.ipc.send) {
+(function() {
+  var TAURI = window.__TAURI__;
+  if (!TAURI) {
+    window.ipc = {
+      send: function(ch, d) { console.log('[IPC send]', ch, d); },
+      on: function(ch, cb) { console.log('[IPC on]', ch); },
+      invoke: function(ch, d) { console.log('[IPC invoke]', ch, d); return Promise.resolve({}); },
+    };
+    return;
+  }
+  var invoke = TAURI.core.invoke;
+  var listen = TAURI.event.listen;
+  var CMD_MAP = {
+    'get-dns-providers':'get_dns_providers','set-dns-provider':'set_dns_provider','toggle-dns':'toggle_dns','test-dns':'test_dns',
+    'get-vpn-state':'get_vpn_state','set-vpn-provider':'set_vpn_provider','set-vpn-country':'set_vpn_country','toggle-vpn':'toggle_vpn','set-custom-proxy':'set_custom_proxy','test-proxy':'test_proxy',
+    'get-adblocker-state':'get_adblock_state','get-adblock-state':'get_adblock_state','toggle-adblocker':'toggle_adblock','toggle-adblock':'toggle_adblock',
+    'autocomplete':'autocomplete','import-list-browsers':'import_list_browsers','import-browser-data':'import_browser_data',
+  };
+  var EVENT_MAP = {
+    'view-event':'view-event','view-contextmenu':'view-contextmenu','download-start':'download-start','download-update':'download-update',
+    'download-done':'download-done','proto-launch-request':'proto-launch-request','open-url-on-start':'open-url-on-start',
+    'receive-tab':'receive-tab','check-default-browser':'check-default-browser','site-dangerous':'site-dangerous','page-load-error':'page-load-error',
+  };
+  var listeners = {};
+  window.ipc = {
+    send: function(channel, data) {
+      if(channel==='proto-open-external'&&data&&data.url){TAURI.plugin&&TAURI.plugin.opener&&TAURI.plugin.opener.openUrl(data.url).catch(function(){});return;}
+      if(channel==='open-file'&&data&&data.path){TAURI.plugin&&TAURI.plugin.opener&&TAURI.plugin.opener.openPath(data.path).catch(function(){});return;}
+      if(channel==='show-file'&&data&&data.path){TAURI.plugin&&TAURI.plugin.opener&&TAURI.plugin.opener.showItemInFolder(data.path).catch(function(){});return;}
+      console.log('[ipc] unhandled send:',channel,data);
+    },
+    on: function(channel, cb) {
+      var eventName=EVENT_MAP[channel];if(!eventName){console.log('[ipc] unhandled on:',channel);return;}
+      if(!listeners[channel]){listeners[channel]=[];listen(eventName,function(event){(listeners[channel]||[]).forEach(function(fn){fn(event.payload);});});}
+      listeners[channel].push(cb);
+    },
+    invoke: function(channel, data) {
+      var cmd=CMD_MAP[channel];
+      if(!cmd){if(channel==='default-browser-status')return Promise.resolve({isDefault:false,isWindows:false});if(channel==='set-default-browser')return Promise.resolve({ok:false,reason:'Not supported'});if(channel==='import-pick-folder')return Promise.resolve(null);return Promise.reject(new Error('Unknown channel: '+channel));}
+      return invoke(cmd,data||{});
+    }
+  };
+})();
+}
+</script>
+</head>
+<body>
+
+<!-- WEBVIEW CONTAINER -->
+<div id="webview-container"></div>
+
+<!-- HOMEPAGE -->
+<div id="homepage">
+  <div id="hp-inner">
+    <div id="hp-logo"><img src="../src/assets/pb-logo.png" alt="PoleBrowse"></div>
+    <div id="hp-search-wrap">
+      <input id="hp-search" type="text" placeholder="Search or type URL" spellcheck="false" autocomplete="off">
+      <button id="hp-go-btn">&#x2192;</button>
+    </div>
+    <div id="hp-shortcuts"></div>
+  </div>
+</div>
+
+<!-- TAB SWITCHER -->
+<div id="tab-switcher">
+  <div id="ts-header">
+    <span id="ts-counter">0 tabs</span>
+    <button id="ts-close">&#x2715;</button>
+  </div>
+  <div id="ts-list"></div>
+  <button id="ts-newtab">+ New tab</button>
+</div>
+
+<!-- SETTINGS SHEET -->
+<div id="settings-sheet">
+  <div id="ss-header">
+    <span id="ss-title">&#x2699; Settings</span>
+    <button id="ss-close">&#x2715;</button>
+  </div>
+  <div id="ss-body"></div>
+</div>
+
+<!-- HISTORY SHEET -->
+<div id="history-sheet">
+  <div id="hs-header">
+    <span>&#x1f550; History</span>
+    <button id="hs-clear">Clear</button>
+    <button id="hs-close">&#x2715;</button>
+  </div>
+  <div id="hs-list"></div>
+</div>
+
+<!-- DOWNLOADS SHEET -->
+<div id="downloads-sheet">
+  <div id="ds-header">
+    <span>&#x2b07; Downloads</span>
+    <button id="ds-close">&#x2715;</button>
+  </div>
+  <div id="ds-list"></div>
+</div>
+
+<!-- BOTTOM TOOLBAR -->
+<div id="toolbar">
+  <div id="urlbar-row">
+    <div id="url-security-icon">&#x1f512;</div>
+    <input id="urlbar" type="text" placeholder="Search or type URL" spellcheck="false" autocomplete="off">
+    <button id="url-go-btn" style="display:none">&#x2192;</button>
+    <div id="vpn-dot" title="VPN Off"></div>
+  </div>
+  <div id="toolbar-btns">
+    <button class="tb-btn" id="tb-back" disabled>&#x2190;</button>
+    <button class="tb-btn" id="tb-fwd" disabled>&#x2192;</button>
+    <button class="tb-btn" id="tb-refresh">&#x21bb;</button>
+    <button class="tb-btn" id="tb-home">&#x2302;</button>
+    <button class="tb-btn" id="tb-tabs">&#x25a3;</button>
+    <button class="tb-btn" id="tb-menu">&#x22ee;</button>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div id="progress"><div id="progress-fill"></div></div>
+
+<!-- BOTTOM SHEET MENU -->
+<div id="bmenu" class="bmenu-hidden">
+  <div class="bmenu-item" data-action="history">&#x1f550; History</div>
+  <div class="bmenu-item" data-action="downloads">&#x2b07; Downloads</div>
+  <div class="bmenu-item" data-action="settings">&#x2699; Settings</div>
+  <div class="bmenu-sep"></div>
+  <div class="bmenu-item" data-action="adblock">&#x1f6e1; Ad Block: <span id="bmenu-adb-status">On</span></div>
+  <div class="bmenu-item" data-action="dns">&#x1f310; DNS: <span id="bmenu-dns-status">Protected</span></div>
+  <div class="bmenu-sep"></div>
+  <div class="bmenu-item" data-action="exit">&#x2715; Exit</div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
