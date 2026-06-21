@@ -5,6 +5,7 @@
   "description": "PoleBrowse Desktop Browser - Tauri build",
   "main": "src/main.js",
   "scripts": {
+    "tauri": "tauri",
     "dev": "tauri dev",
     "build": "tauri build",
     "electron": "electron --no-sandbox src/main.js",
