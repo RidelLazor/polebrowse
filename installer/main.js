@@ -76,7 +76,7 @@ ipcMain.handle('get-app-version', () => {
 });
 
 ipcMain.handle('check-latest-version', async () => {
-  return await installer.checkLatestVersion();
+  return await installer.checkLatestVersion(app.getVersion());
 });
 
 ipcMain.handle('start-download', async (e, { url, destPath }) => {

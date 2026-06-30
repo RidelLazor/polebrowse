@@ -72,18 +72,15 @@ function hubRequest(url) {
   });
 }
 
-async function checkLatestVersion() {
+async function checkLatestVersion(currentVersion) {
   try {
     const info = await hubRequest(API_URL);
     if (info.noReleases) {
-      return { hasUpdate: false, latestVersion: null, currentVersion: '0.0.0', downloadUrl: null, error: null, noReleases: true };
+      return { hasUpdate: false, latestVersion: null, currentVersion: currentVersion || '0.0.0', downloadUrl: null, error: null, noReleases: true };
     }
     const plat = process.platform;
     const asset = info.platforms ? info.platforms[plat] : null;
-    const appPkg = JSON.parse(
-      fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf-8')
-    );
-    const currentVer = appPkg.version || '0.0.0';
+    const currentVer = currentVersion || '0.0.0';
     return {
       hasUpdate: isNewer(info.latestVersion, currentVer),
       latestVersion: info.latestVersion,
