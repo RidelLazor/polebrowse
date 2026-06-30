@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PoleBrowse Installer</title>
+<link rel="icon" href="../src/assets/pb-logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="titlebar">
+  <div class="tb-drag"><span class="tb-title">PoleBrowse Installer</span></div>
+  <div class="tb-controls">
+    <button class="tb-btn" id="tb-min" title="Minimize">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="2" y1="6" x2="10" y2="6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+    </button>
+    <button class="tb-btn" id="tb-max" title="Maximize">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="2" y="2" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1.2"/></svg>
+    </button>
+    <button class="tb-btn tb-close" id="tb-close" title="Close">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="2.5" y1="2.5" x2="9.5" y2="9.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="9.5" y1="2.5" x2="2.5" y2="9.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+</div>
+
+<div id="app">
+  <!-- Step 1: Welcome -->
+  <div class="step" id="step-welcome">
+    <div class="logo-ring">
+      <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
+        <rect x="2" y="2" width="68" height="68" rx="18" fill="url(#logo-grad)" stroke="#22C55E" stroke-width="1.5" stroke-opacity="0.4"/>
+        <rect x="8" y="8" width="56" height="56" rx="14" fill="#0F172A"/>
+        <text x="36" y="44" text-anchor="middle" fill="#22C55E" font-family="Inter,system-ui,sans-serif" font-size="22" font-weight="700" letter-spacing="-0.5">PB</text>
+        <defs>
+          <linearGradient id="logo-grad" x1="0" y1="0" x2="72" y2="72">
+            <stop offset="0%" stop-color="#22C55E"/>
+            <stop offset="100%" stop-color="#059669"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <h1 class="title" id="welcome-title">Install PoleBrowse</h1>
+    <p class="sub" id="welcome-sub">Version <span id="ver-current">—</span></p>
+    <p class="desc">The private, fast, fully-featured browser.<br>Ready for Windows, macOS, and Linux.</p>
+
+    <div class="benefits">
+      <div class="benefit">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#22C55E" stroke-width="1.2"/><path d="M5 8.5L7 10.5L11 6" stroke="#22C55E" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>DNS-over-HTTPS encryption</span>
+      </div>
+      <div class="benefit">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#22C55E" stroke-width="1.2"/><path d="M5 8.5L7 10.5L11 6" stroke="#22C55E" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Built-in ad &amp; tracker blocking</span>
+      </div>
+      <div class="benefit">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#22C55E" stroke-width="1.2"/><path d="M5 8.5L7 10.5L11 6" stroke="#22C55E" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Tor &amp; VPN proxy support</span>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="btn-start">Install</button>
+      <button class="btn btn-ghost" id="btn-try" style="border:1px solid var(--accent);color:var(--accent);">Try it out</button>
+      <button class="btn btn-ghost" id="btn-advanced">Advanced settings</button>
+    </div>
+    <div class="advanced-row" id="advanced-row">
+      <div class="dir-row">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4C2 3.44772 2.44772 3 3 3H6L7.5 4.5H13C13.5523 4.5 14 4.94772 14 5.5V12C14 12.5523 13.5523 13 13 13H3C2.44772 13 2 12.5523 2 12V4Z" stroke="#94A3B8" stroke-width="1.2"/></svg>
+        <span class="dir-label">Install to:</span>
+        <span class="dir-path" id="install-dir">—</span>
+        <button class="btn btn-sm" id="btn-browse">Change</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Agreement -->
+  <div class="step" id="step-agreement">
+    <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    <h2 class="title">License Agreement</h2>
+    <p class="sub">Please review the terms before installing</p>
+    <div class="eula-box">
+      <div class="eula-header">MIT License — PoleBrowse</div>
+      <div class="eula-body">
+        <p>Copyright (c) 2026 RidelL</p>
+        <br>
+        <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
+        <br>
+        <p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
+        <br>
+        <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+        <br>
+        <p>Additional terms for bundled components:</p>
+        <p>• Chromium/Electron — BSD-style license</p>
+        <p>• Rust/Tauri — Apache 2.0 / MIT</p>
+        <p>• Three.js — MIT License</p>
+        <p>• All third-party dependencies retain their original licenses.</p>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" id="btn-agree">I Agree</button>
+      <button class="btn btn-ghost" id="btn-decline">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Step 3: Checking -->
+  <div class="step" id="step-checking">
+    <div class="spinner-lg"></div>
+    <h2 class="title">Checking for latest version</h2>
+    <p class="sub" id="checking-sub">Contacting hub</p>
+  </div>
+
+  <!-- No releases -->
+  <div class="step" id="step-noreleases">
+    <div class="icon-box icon-info">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    </div>
+    <h2 class="title">No Current releases found</h2>
+    <p class="sub">Wait for a release</p>
+    <div class="actions">
+      <button class="btn btn-ghost" id="btn-noreleases-close">Close</button>
+    </div>
+  </div>
+
+  <!-- Step 3: Version info -->
+  <div class="step" id="step-version">
+    <div class="icon-box icon-info">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    </div>
+    <h2 class="title" id="version-title">Update available</h2>
+    <div class="version-compare">
+      <div class="vc-item">
+        <span class="vc-label">Installed</span>
+        <span class="vc-val" id="vc-current">—</span>
+      </div>
+      <svg class="vc-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.5"><path d="M5 12H19M19 12L12 5M19 12L12 19"/></svg>
+      <div class="vc-item vc-item-latest">
+        <span class="vc-label">Latest</span>
+        <span class="vc-val" id="vc-latest">—</span>
+      </div>
+    </div>
+    <div class="release-notes" id="release-notes"></div>
+    <div class="actions">
+      <button class="btn btn-primary" id="btn-download">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download &amp; Install
+      </button>
+      <button class="btn btn-ghost" id="btn-skip-version">Skip</button>
+    </div>
+  </div>
+
+  <!-- Step 4: Downloading -->
+  <div class="step" id="step-downloading">
+    <div class="progress-ring" id="progress-ring">
+      <svg viewBox="0 0 100 100">
+        <circle class="pr-bg" cx="50" cy="50" r="42"/>
+        <circle class="pr-fg" id="pr-fg" cx="50" cy="50" r="42"/>
+      </svg>
+      <div class="pr-text" id="pr-text">0%</div>
+    </div>
+    <h2 class="title" id="dl-title">Downloading</h2>
+    <p class="sub" id="dl-sub">Preparing download</p>
+    <div class="progress-track">
+      <div class="progress-bar"><div class="progress-fill" id="dl-progress-fill"></div></div>
+    </div>
+    <p class="size-info" id="size-info"></p>
+    <button class="btn btn-ghost btn-cancel" id="btn-cancel-dl">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      Cancel
+    </button>
+  </div>
+
+  <!-- Step 5: Installing -->
+  <div class="step" id="step-installing">
+    <div class="pulse-ring">
+      <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+        <rect x="4" y="4" width="72" height="72" rx="18" fill="#22C55E" fill-opacity="0.08" stroke="#22C55E" stroke-width="1.5"/>
+        <rect x="16" y="16" width="48" height="48" rx="12" fill="#22C55E" fill-opacity="0.15"/>
+        <path d="M33 42L38 47L47 36" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <h2 class="title">Installing</h2>
+    <p class="sub" id="install-status">Setting up PoleBrowse</p>
+    <div class="progress-track">
+      <div class="progress-bar"><div class="progress-fill" id="install-progress-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- Step 6: Done -->
+  <div class="step" id="step-done">
+    <div class="icon-box icon-success">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    </div>
+    <h2 class="title">Installation Complete</h2>
+    <p class="sub">PoleBrowse is ready to use.</p>
+    <div class="actions">
+      <button class="btn btn-primary btn-lg" id="btn-launch">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        Launch PoleBrowse
+      </button>
+      <button class="btn btn-ghost" id="btn-close">Close</button>
+    </div>
+  </div>
+
+  <!-- Error toast -->
+  <div class="error-toast" id="error-toast">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span class="error-msg" id="error-msg">An error occurred</span>
+    <button class="error-close" id="error-close">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+const i = window.installer;
+const $ = (id) => document.getElementById(id);
+
+let state = { mode: 'install', installDir: '', downloadUrl: null, downloadDest: '', installerPath: '' };
+
+i.onInit(async (data) => {
+  state.mode = data.mode || 'install';
+  document.title = state.mode === 'update' ? 'PoleBrowse Updater' : 'PoleBrowse Installer';
+  $('welcome-title').textContent = state.mode === 'update' ? 'Update PoleBrowse' : 'Install PoleBrowse';
+  // Platform-aware default install directory
+  const platform = data.platform || 'linux';
+  if (platform === 'win32') {
+    state.installDir = 'C:\\Program Files\\PoleBrowse';
+  } else if (platform === 'darwin') {
+    state.installDir = '/Applications/PoleBrowse.app';
+  } else {
+    state.installDir = '/opt/PoleBrowse';
+  }
+  $('install-dir').textContent = state.installDir;
+  try {
+    const v = await i.getAppVersion();
+    $('ver-current').textContent = 'v' + v;
+  } catch (_) {}
+  if (!data.devMode) { $('btn-try').style.display = 'none'; }
+  showStep('step-welcome');
+});
+
+function showStep(id) {
+  document.querySelectorAll('.step').forEach(s => { s.classList.remove('active'); });
+  const el = $(id);
+  el.style.display = 'flex';
+  requestAnimationFrame(() => el.classList.add('active'));
+}
+
+// Step 1: Welcome → Agreement
+$('btn-start').addEventListener('click', () => {
+  if ($('btn-start').disabled) return;
+  showStep('step-agreement');
+});
+
+// Step 2: Agreement
+$('btn-agree').addEventListener('click', async () => {
+  showStep('step-checking');
+  $('checking-sub').textContent = 'Fetching latest version from GitHub…';
+  const result = await i.checkLatestVersion();
+  if (result.error) { showError(result.error); showStep('step-welcome'); return; }
+  if (result.noReleases || !result.downloadUrl) {
+    showStep('step-noreleases'); return;
+  }
+  state.downloadUrl = result.downloadUrl;
+  $('vc-current').textContent = 'v' + (result.currentVersion || '—');
+  $('vc-latest').textContent = 'v' + (result.latestVersion || '—');
+  $('version-title').textContent = result.hasUpdate ? 'Update available' : 'Up to date';
+  if (result.releaseNotes) { $('release-notes').textContent = result.releaseNotes; $('release-notes').style.display = ''; }
+  else { $('release-notes').style.display = 'none'; }
+  if (result.hasUpdate) { showStep('step-version'); }
+  else { await startDownload(state.downloadUrl); }
+});
+
+$('btn-decline').addEventListener('click', () => {
+  i.quit();
+});
+
+$('btn-noreleases-close').addEventListener('click', () => {
+  i.quit();
+});
+
+$('btn-advanced').addEventListener('click', () => {
+  $('advanced-row').classList.toggle('open');
+});
+
+// Window controls
+$('tb-min').addEventListener('click', () => i.minimize());
+$('tb-max').addEventListener('click', () => i.maximize());
+$('tb-close').addEventListener('click', () => i.close());
+
+// Try it out
+$('btn-try').addEventListener('click', async () => {
+  $('btn-try').disabled = true;
+  $('btn-try').textContent = 'Launching…';
+  const r = await i.tryBrowser();
+  if (!r.success) { showError(r.error); }
+  $('btn-try').disabled = false;
+  $('btn-try').textContent = 'Try it out';
+});
+
+$('btn-browse').addEventListener('click', async () => {
+  const dir = await i.selectInstallDir();
+  if (dir) { state.installDir = dir; $('install-dir').textContent = dir; }
+});
+
+// Step 3: Version
+$('btn-download').addEventListener('click', () => startDownload(state.downloadUrl));
+$('btn-skip-version').addEventListener('click', () => startDownload(state.downloadUrl));
+
+// Step 4: Download
+async function startDownload(url) {
+  if (!url) { showError('No download URL available'); showStep('step-welcome'); return; }
+  showStep('step-downloading');
+  $('btn-cancel-dl').style.display = '';
+  const ext = url.split('.').pop();
+  state.downloadDest = 'PoleBrowse-Installer-' + Date.now() + '.' + ext;
+  $('dl-title').textContent = 'Downloading';
+  $('dl-sub').textContent = 'Downloading PoleBrowse';
+
+  i.onDownloadProgress((p) => {
+    const pct = p.percent || 0;
+    const circumference = 2 * Math.PI * 42;
+    $('pr-fg').style.strokeDashoffset = circumference - (circumference * pct / 100);
+    $('pr-text').textContent = pct + '%';
+    $('dl-progress-fill').style.width = pct + '%';
+    const mb = (p.downloaded / 1048576).toFixed(1);
+    const total = p.total ? '/' + (p.total / 1048576).toFixed(1) + ' MB' : 'MB';
+    $('size-info').textContent = mb + ' ' + total;
+  });
+
+  const result = await i.startDownload(url, state.downloadDest);
+  if (result.success) {
+    state.installerPath = result.filePath;
+    await startInstall();
+  } else if (result.error === 'Cancelled') { showStep('step-welcome'); }
+  else { showError(result.error); showStep('step-welcome'); }
+}
+
+$('btn-cancel-dl').addEventListener('click', () => { i.cancelDownload(); $('dl-sub').textContent = 'Cancelling…'; });
+
+// Step 5: Install
+async function startInstall() {
+  showStep('step-installing');
+  i.onInstallProgress((status) => {
+    $('install-status').textContent = status.message || 'Installing…';
+    if (status.stage === 'extracting') $('install-progress-fill').style.width = '50%';
+    else if (status.stage === 'done') $('install-progress-fill').style.width = '100%';
+  });
+  const result = await i.installApp(state.installerPath, state.installDir);
+  if (result.success) { showStep('step-done'); }
+  else { showError(result.error); showStep('step-welcome'); }
+}
+
+// Step 6: Done
+$('btn-launch').addEventListener('click', async () => { await i.launchApp(); i.quit(); });
+$('btn-close').addEventListener('click', () => i.quit());
+
+// Error
+function showError(msg) {
+  $('error-msg').textContent = msg;
+  $('error-toast').classList.add('show');
+  setTimeout(() => $('error-toast').classList.remove('show'), 6000);
+}
+$('error-close').addEventListener('click', () => $('error-toast').classList.remove('show'));
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// Init progress ring
+const circumference = 2 * Math.PI * 42;
+$('pr-fg').style.strokeDasharray = circumference;
+$('pr-fg').style.strokeDashoffset = circumference;
+</script>
+</body>
+</html>

@@ -7,7 +7,7 @@ const { spawn } = require('child_process');
 
 // ── CONFIG ─────────────────────────────────────────────────────────
 const HUB_URL = process.env.POLEBROWSE_HUB_URL || 'https://polebrowse.vercel.app';
-const API_URL = `${HUB_URL}/api/releases/latest`;
+const API_URL = `${HUB_URL}/api/latest`;
 const CURRENT_VERSION = app.getVersion();
 
 // ── VERSION COMPARISON ─────────────────────────────────────────────

@@ -6,7 +6,7 @@ const { spawn, execSync } = require('child_process');
 const os = require('os');
 
 const HUB_URL = process.env.POLEBROWSE_HUB_URL || 'https://polebrowse.vercel.app';
-const API_URL = `${HUB_URL}/api/releases/latest`;
+const API_URL = `${HUB_URL}/api/latest`;
 
 // ── Detect install destination ──────────────────────────────────────
 function getDefaultInstallDir() {
