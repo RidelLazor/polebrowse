@@ -241,7 +241,7 @@ i.onInit(async (data) => {
 });
 
 function showStep(id) {
-  document.querySelectorAll('.step').forEach(s => { s.classList.remove('active'); });
+  document.querySelectorAll('.step').forEach(s => { s.classList.remove('active'); s.style.display = ''; });
   const el = $(id);
   el.style.display = 'flex';
   requestAnimationFrame(() => el.classList.add('active'));
