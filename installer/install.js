@@ -194,9 +194,9 @@ async function install(zipPath, installDir, onStatus) {
               const macInner = path.join(full, 'Contents', 'MacOS', 'PoleBrowse');
               if (fs.existsSync(macInner)) { fs.chmodSync(macInner, '755'); return; }
             }
-          } catch {}
+          } catch (e) { console.error('chmod error:', e.message); }
         }
-      } catch {}
+      } catch (e) { console.error('findAndChmod error:', e.message); }
     }
     findAndChmod(installDir);
   }

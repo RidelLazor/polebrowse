@@ -139,9 +139,9 @@ ipcMain.handle('install-app', async (e, { installerPath, installDir, password })
                     const macInner = path.join(full, 'Contents', 'MacOS', 'PoleBrowse');
                     if (fs.existsSync(macInner)) { fs.chmodSync(macInner, '755'); return; }
                   }
-                } catch {}
+                 } catch (e) { console.error('chmod error:', e.message); }
               }
-            } catch {}
+            } catch (e) { console.error('chmodBinary error:', e.message); }
           }
           chmodBinary(tmpDir);
         }
