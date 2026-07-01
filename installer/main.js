@@ -2,7 +2,10 @@ const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 app.commandLine.appendSwitch('no-sandbox');
 const path = require('path');
 const fs = require('fs');
+const { spawn } = require('child_process');
+const os = require('os');
 const installer = require('./install');
+const sudo = require('sudo-prompt');
 
 let win = null;
 let installAbort = null;
@@ -100,8 +103,72 @@ ipcMain.on('cancel-download', () => {
   if (installAbort) installAbort();
 });
 
-ipcMain.handle('install-app', async (e, { installerPath, installDir }) => {
+ipcMain.handle('install-app', async (e, { installerPath, installDir, password }) => {
   try {
+    const plat = process.platform;
+    const needsElevation = (plat === 'linux' && installDir.startsWith('/opt'))
+      || (plat === 'win32' && installDir.toLowerCase().includes('program files'))
+      || (plat === 'darwin' && installDir.startsWith('/Applications'));
+
+    if (needsElevation) {
+      const tmpDir = path.join(os.tmpdir(), 'pb-install-' + Date.now());
+      fs.mkdirSync(tmpDir, { recursive: true });
+      try {
+        // Extract to temp dir as normal user
+        const AdmZip = require('adm-zip');
+        const zip = new AdmZip(installerPath);
+        if (win && !win.isDestroyed()) win.webContents.send('install-progress', { stage: 'extracting', message: 'Extracting…' });
+        zip.extractAllTo(tmpDir, true);
+
+        if (plat !== 'win32') {
+          for (const name of ['polebrowse', 'PoleBrowse']) {
+            const bp = path.join(tmpDir, name);
+            if (fs.existsSync(bp)) { try { fs.chmodSync(bp, '755'); } catch {} }
+          }
+        }
+
+        if (win && !win.isDestroyed()) win.webContents.send('install-progress', { stage: 'extracting', message: 'Authorizing installation…' });
+
+        // Run elevated commands
+        const cmds = plat === 'linux'
+          ? [`mkdir -p ${installDir}`, `cp -r ${tmpDir}/* ${installDir}/`]
+          : plat === 'win32'
+            ? [`if not exist "${installDir}" mkdir "${installDir}"`, `xcopy "${tmpDir}\\*" "${installDir}\\" /E /I /Y`]
+            : [`mkdir -p "${installDir}"`, `cp -r "${tmpDir}"/* "${installDir}/"`];
+
+        for (const cmd of cmds) {
+          if (plat === 'linux') {
+            await new Promise((resolve, reject) => {
+              const p = spawn('sudo', ['-S', 'sh', '-c', cmd], { stdio: ['pipe', 'pipe', 'pipe'] });
+              if (password) p.stdin.write(password + '\n');
+              p.stdin.end();
+              let err = '';
+              p.stderr.on('data', d => { err += d; });
+              p.on('close', code => {
+                if (code === 0) resolve();
+                else reject(new Error(err.trim() || `Exit code ${code}`));
+              });
+              p.on('error', reject);
+            });
+          } else {
+            await new Promise((resolve, reject) => {
+              sudo.exec(cmd, { name: 'PoleBrowse Installer' }, (err) => {
+                if (err) reject(err);
+                else resolve();
+              });
+            });
+          }
+        }
+
+        installer.saveInstallDir(installDir);
+        if (win && !win.isDestroyed()) win.webContents.send('install-progress', { stage: 'done', message: 'Installation complete!' });
+        return { success: true };
+      } finally {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
+    }
+
+    // No elevation needed
     await installer.install(installerPath, installDir, (status) => {
       if (win && !win.isDestroyed()) {
         win.webContents.send('install-progress', status);

@@ -103,7 +103,24 @@
     </div>
   </div>
 
-  <!-- Step 3: Checking -->
+  <!-- Step 3: Password (Linux only) -->
+  <div class="step" id="step-password" style="display:none">
+    <div class="icon-box icon-info">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg>
+    </div>
+    <h2 class="title">Administrator access required</h2>
+    <p class="sub">Installing to <span id="pw-dir" style="color:var(--text)">/opt/PoleBrowse</span> needs sudo</p>
+    <div style="width:100%;max-width:280px;display:flex;flex-direction:column;gap:10px;margin-top:4px">
+      <input type="password" id="pw-input" placeholder="sudo password" style="padding:12px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--ff);font-size:14px;outline:none;transition:border-color 0.2s" autocomplete="off" spellcheck="false">
+      <p class="sub" id="pw-error" style="color:var(--red);font-size:12px;display:none">Wrong password</p>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" id="btn-pw-confirm">Continue</button>
+      <button class="btn btn-ghost" id="btn-pw-cancel">Skip (install to home)</button>
+    </div>
+  </div>
+
+  <!-- Step 4: Checking -->
   <div class="step" id="step-checking">
     <div class="spinner-lg"></div>
     <h2 class="title">Checking for latest version</h2>
@@ -216,20 +233,22 @@
 const i = window.installer;
 const $ = (id) => document.getElementById(id);
 
-let state = { mode: 'install', installDir: '', downloadUrl: null, downloadDest: '', installerPath: '' };
+let state = { mode: 'install', installDir: '', downloadUrl: null, downloadDest: '', installerPath: '', password: '', platform: 'linux' };
 
 i.onInit(async (data) => {
   state.mode = data.mode || 'install';
+  state.platform = data.platform || 'linux';
   document.title = state.mode === 'update' ? 'PoleBrowse Updater' : 'PoleBrowse Installer';
   $('welcome-title').textContent = state.mode === 'update' ? 'Update PoleBrowse' : 'Install PoleBrowse';
   // Platform-aware default install directory
-  const platform = data.platform || 'linux';
+  const platform = state.platform;
   if (platform === 'win32') {
     state.installDir = 'C:\\Program Files\\PoleBrowse';
   } else if (platform === 'darwin') {
     state.installDir = '/Applications/PoleBrowse.app';
   } else {
-    state.installDir = (data.homeDir || '/home') + '/.local/share/polebrowse';
+    state.installDir = '/opt/PoleBrowse';
+    state.userDir = (data.homeDir || '/home') + '/.local/share/polebrowse';
   }
   $('install-dir').textContent = state.installDir;
   try {
@@ -255,8 +274,39 @@ $('btn-start').addEventListener('click', () => {
 
 // Step 2: Agreement
 $('btn-agree').addEventListener('click', async () => {
+  const needsElevation = (state.platform === 'linux' && state.installDir.startsWith('/opt'))
+    || (state.platform === 'win32' && state.installDir.toLowerCase().includes('program files'))
+    || (state.platform === 'darwin' && state.installDir.startsWith('/Applications'));
+  if (needsElevation && state.platform === 'linux') {
+    $('pw-dir').textContent = state.installDir;
+    $('pw-input').value = '';
+    $('pw-error').style.display = 'none';
+    showStep('step-password');
+    $('pw-input').focus();
+    return;
+  }
+  await doCheckAndDownload();
+});
+
+$('btn-pw-confirm').addEventListener('click', async () => {
+  const pw = $('pw-input').value;
+  if (!pw) { $('pw-error').textContent = 'Please enter your sudo password'; $('pw-error').style.display = ''; return; }
+  $('btn-pw-confirm').disabled = true;
+  $('btn-pw-confirm').textContent = 'Verifying…';
+  await doCheckAndDownload(pw);
+  $('btn-pw-confirm').disabled = false;
+  $('btn-pw-confirm').textContent = 'Continue';
+});
+
+$('btn-pw-cancel').addEventListener('click', () => {
+  state.installDir = state.userDir;
+  $('install-dir').textContent = state.installDir;
+  doCheckAndDownload();
+});
+
+async function doCheckAndDownload(password) {
   showStep('step-checking');
-  $('checking-sub').textContent = 'Fetching latest version from GitHub…';
+  $('checking-sub').textContent = 'Fetching latest version from hub…';
   const result = await i.checkLatestVersion();
   if (result.error) { showError(result.error); showStep('step-welcome'); return; }
   if (result.noReleases || !result.downloadUrl) {
@@ -268,9 +318,10 @@ $('btn-agree').addEventListener('click', async () => {
   $('version-title').textContent = result.hasUpdate ? 'Update available' : 'Up to date';
   if (result.releaseNotes) { $('release-notes').textContent = result.releaseNotes; $('release-notes').style.display = ''; }
   else { $('release-notes').style.display = 'none'; }
+  state.password = password;
   if (result.hasUpdate) { showStep('step-version'); }
   else { await startDownload(state.downloadUrl); }
-});
+}
 
 $('btn-decline').addEventListener('click', () => {
   i.quit();
@@ -347,9 +398,18 @@ async function startInstall() {
     if (status.stage === 'extracting') $('install-progress-fill').style.width = '50%';
     else if (status.stage === 'done') $('install-progress-fill').style.width = '100%';
   });
-  const result = await i.installApp(state.installerPath, state.installDir);
+  const result = await i.installApp(state.installerPath, state.installDir, state.password);
   if (result.success) { showStep('step-done'); }
-  else { showError(result.error); showStep('step-welcome'); }
+  else {
+    if (result.error && result.error.includes('password')) {
+      $('pw-error').textContent = 'Wrong password';
+      $('pw-error').style.display = '';
+      showStep('step-password');
+      $('pw-input').focus();
+      return;
+    }
+    showError(result.error); showStep('step-welcome');
+  }
 }
 
 // Step 6: Done

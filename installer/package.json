@@ -1,0 +1,70 @@
+{
+  "name": "polebrowse-installer",
+  "productName": "PoleBrowse Installer",
+  "version": "1.0.0",
+  "description": "Install or update PoleBrowse browser",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win",
+    "dist:mac": "electron-builder --mac",
+    "dist:linux": "electron-builder --linux"
+  },
+  "author": "RidelL",
+  "license": "MIT",
+  "build": {
+    "appId": "com.polebrowse.installer",
+    "productName": "PoleBrowse Installer",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "style.css",
+      "install.js"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "../src/assets/pb-logo-256.ico",
+      "signAndEditExecutable": false
+    },
+    "mac": {
+      "target": [
+        "zip"
+      ],
+      "icon": "../src/assets/pb-logo.icns"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "icon": "../src/assets/pb-logo-512.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "runAfterFinish": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "PoleBrowse"
+    }
+  },
+  "devDependencies": {
+    "electron": "^42.4.1",
+    "electron-builder": "^25.0.0"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.16",
+    "sudo-prompt": "^9.2.1"
+  }
+}
