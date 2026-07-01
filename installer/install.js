@@ -173,14 +173,32 @@ async function install(zipPath, installDir, onStatus) {
   // Make the binary executable on Linux/macOS
   const plat = process.platform;
   if (plat !== 'win32') {
-    const binaryName = plat === 'darwin' ? 'PoleBrowse.app' : 'polebrowse';
-    const binaryPath = path.join(installDir, binaryName);
-    if (fs.existsSync(binaryPath) && fs.statSync(binaryPath).isDirectory()) {
-      const appPath = path.join(binaryPath, 'Contents', 'MacOS', 'PoleBrowse');
-      if (fs.existsSync(appPath)) fs.chmodSync(appPath, '755');
-    } else if (fs.existsSync(binaryPath)) {
-      fs.chmodSync(binaryPath, '755');
+    function findAndChmod(dir) {
+      try {
+        if (!fs.existsSync(dir)) return;
+        const entries = fs.readdirSync(dir);
+        for (const e of entries) {
+          const full = path.join(dir, e);
+          try {
+            const stat = fs.statSync(full);
+            if (e === 'polebrowse' && !stat.isDirectory()) { fs.chmodSync(full, '755'); return; }
+            if (e === 'PoleBrowse' && stat.isDirectory()) {
+              // Dive into the app directory wrapper
+              const inner = path.join(full, 'polebrowse');
+              if (fs.existsSync(inner) && !fs.statSync(inner).isDirectory()) { fs.chmodSync(inner, '755'); return; }
+              // macOS .app bundle
+              const macInner = path.join(full, 'Contents', 'MacOS', 'PoleBrowse');
+              if (fs.existsSync(macInner)) { fs.chmodSync(macInner, '755'); return; }
+            }
+            if (e === 'PoleBrowse.app' && stat.isDirectory()) {
+              const macInner = path.join(full, 'Contents', 'MacOS', 'PoleBrowse');
+              if (fs.existsSync(macInner)) { fs.chmodSync(macInner, '755'); return; }
+            }
+          } catch {}
+        }
+      } catch {}
     }
+    findAndChmod(installDir);
   }
 
   saveInstallDir(installDir);

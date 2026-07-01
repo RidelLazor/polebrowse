@@ -121,10 +121,29 @@ ipcMain.handle('install-app', async (e, { installerPath, installDir, password })
         zip.extractAllTo(tmpDir, true);
 
         if (plat !== 'win32') {
-          for (const name of ['polebrowse', 'PoleBrowse']) {
-            const bp = path.join(tmpDir, name);
-            if (fs.existsSync(bp)) { try { fs.chmodSync(bp, '755'); } catch {} }
+          function chmodBinary(dir) {
+            try {
+              if (!fs.existsSync(dir)) return;
+              for (const e of fs.readdirSync(dir)) {
+                const full = path.join(dir, e);
+                try {
+                  const stat = fs.statSync(full);
+                  if (e === 'polebrowse' && !stat.isDirectory()) { fs.chmodSync(full, '755'); return; }
+                  if (e === 'PoleBrowse' && stat.isDirectory()) {
+                    const inner = path.join(full, 'polebrowse');
+                    if (fs.existsSync(inner) && !fs.statSync(inner).isDirectory()) { fs.chmodSync(inner, '755'); return; }
+                    const macInner = path.join(full, 'Contents', 'MacOS', 'PoleBrowse');
+                    if (fs.existsSync(macInner)) { fs.chmodSync(macInner, '755'); return; }
+                  }
+                  if (e === 'PoleBrowse.app' && stat.isDirectory()) {
+                    const macInner = path.join(full, 'Contents', 'MacOS', 'PoleBrowse');
+                    if (fs.existsSync(macInner)) { fs.chmodSync(macInner, '755'); return; }
+                  }
+                } catch {}
+              }
+            } catch {}
           }
+          chmodBinary(tmpDir);
         }
 
         if (win && !win.isDestroyed()) win.webContents.send('install-progress', { stage: 'extracting', message: 'Authorizing installation…' });
