@@ -112,6 +112,7 @@ ipcMain.handle('install-app', async (e, { installerPath, installDir, password })
 
     if (needsElevation) {
       const tmpDir = path.join(os.tmpdir(), 'pb-install-' + Date.now());
+      try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch {}
       fs.mkdirSync(tmpDir, { recursive: true });
       try {
         // Extract to temp dir as normal user

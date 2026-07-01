@@ -166,6 +166,8 @@ const AdmZip = require('adm-zip');
 async function install(zipPath, installDir, onStatus) {
   if (onStatus) onStatus({ stage: 'extracting', message: 'Extracting…' });
 
+  // Remove old install first to avoid stale file conflicts
+  try { fs.rmSync(installDir, { recursive: true, force: true }); } catch (e) { console.error('rm old install:', e.message); }
   fs.mkdirSync(installDir, { recursive: true });
   const zip = new AdmZip(zipPath);
   zip.extractAllTo(installDir, true);
