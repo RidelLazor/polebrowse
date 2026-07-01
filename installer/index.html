@@ -229,7 +229,7 @@ i.onInit(async (data) => {
   } else if (platform === 'darwin') {
     state.installDir = '/Applications/PoleBrowse.app';
   } else {
-    state.installDir = '/opt/PoleBrowse';
+    state.installDir = (data.homeDir || '/home') + '/.local/share/polebrowse';
   }
   $('install-dir').textContent = state.installDir;
   try {

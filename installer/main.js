@@ -36,6 +36,7 @@ function createWindow() {
       devMode: isDev,
       appVersion: app.getVersion(),
       platform: process.platform,
+      homeDir: require('os').homedir(),
     });
   });
 }
